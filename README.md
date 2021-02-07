@@ -1,0 +1,37 @@
+# HealthBuddy
+
+HealthBuddy is a service that periodically queries health endpoints of one
+or more services and generates alerts in case these queries fail.
+
+Currently, only the specific Microsoft Teams channel webhooks are supported.
+
+## Building
+
+An execution of
+```
+./gradlew build  
+```
+will generate a fat jar located under build/libs/. 
+
+## Configuration
+
+Save the following as ```application.yaml``` next to the binary for execution:
+```yaml
+# The update interval (in ms)
+updateInterval: 10000
+# A list of services and their endpoints to be queried
+services: 
+  - name: my-service prod
+    url: https://foo.bar/actuator/health
+    allowedStatusCodes:
+      - 200
+  - name: other-service prod
+    url: http://127.0.0.1
+    allowedStatusCodes:
+      - 200
+# The Teams webhook to be called for alerts
+teams:
+  webHookURL: http://127.0.0.1/hook
+
+```
+

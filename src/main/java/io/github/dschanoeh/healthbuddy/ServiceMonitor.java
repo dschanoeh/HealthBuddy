@@ -30,7 +30,7 @@ public class ServiceMonitor{
         NotificationChannel channel = new TeamsNotificationChannel(config.getTeams());
 
         for(ServiceConfig c : config.getServices()) {
-            EndpointEvaluator evaluator = new EndpointEvaluator(c, channel);
+            EndpointEvaluator evaluator = new EndpointEvaluator(c, config.getNetwork(), channel);
             scheduler.scheduleAtFixedRate(evaluator::evaluate, config.getUpdateInterval());
         }
     }

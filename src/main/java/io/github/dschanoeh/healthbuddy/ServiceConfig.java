@@ -1,6 +1,5 @@
 package io.github.dschanoeh.healthbuddy;
 
-import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.lang.NonNull;
 import org.springframework.validation.annotation.Validated;
 

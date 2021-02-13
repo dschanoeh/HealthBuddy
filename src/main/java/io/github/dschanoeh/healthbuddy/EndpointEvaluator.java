@@ -2,6 +2,7 @@ package io.github.dschanoeh.healthbuddy;
 
 import io.github.dschanoeh.healthbuddy.notifications.NotificationChannel;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
@@ -22,11 +23,24 @@ public class EndpointEvaluator {
     ServiceConfig config;
     Incident currentIncident;
     NotificationChannel channel;
+    NetworkConfig networkConfig;
 
-    public EndpointEvaluator(ServiceConfig config, NotificationChannel channel) {
+    public EndpointEvaluator(ServiceConfig config, NetworkConfig networkConfig, NotificationChannel channel) {
         this.config = config;
         this.channel = channel;
-        requestConfig = RequestConfig.custom().setConnectTimeout(5 * 1000).build();
+        this.networkConfig = networkConfig;
+        setupRequestConfig();
+    }
+
+    private void setupRequestConfig() {
+
+        RequestConfig.Builder builder = RequestConfig.custom();
+        if(networkConfig.getHttpProxyHost() != null) {
+            HttpHost proxy = new HttpHost(networkConfig.getHttpProxyHost(), networkConfig.getHttpProxyPort());
+            builder.setProxy(proxy);
+        }
+        builder.setConnectTimeout(networkConfig.getTimeout());
+        this.requestConfig = builder.build();
     }
 
     public void evaluate() {
@@ -40,9 +54,11 @@ public class EndpointEvaluator {
                 logger.log(Level.WARN, "Status code not matching allowed status codes");
                 if(currentIncident == null || !currentIncident.isOpen()) {
                     HttpEntity entity = response.getEntity();
-                    String body = EntityUtils.toString(entity);
                     currentIncident = new Incident(Incident.Type.UNEXPECTED_RESPONSE, channel);
-                    currentIncident.setBody(body);
+                    if(entity != null) {
+                        String body = EntityUtils.toString(entity);
+                        currentIncident.setBody(body);
+                    }
                     currentIncident.setHttpStatus(statusCode);
                     currentIncident.setServiceName(config.getName());
                     currentIncident.open();

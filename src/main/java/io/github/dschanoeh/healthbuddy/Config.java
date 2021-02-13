@@ -1,6 +1,8 @@
 package io.github.dschanoeh.healthbuddy;
 
 import io.github.dschanoeh.healthbuddy.notifications.teams.TeamsConfiguration;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
@@ -20,15 +22,21 @@ import java.util.List;
 @Validated
 public class Config {
     @NestedConfigurationProperty
+    @Getter
+    @Setter
     private final List<ServiceConfig> services = new ArrayList<>();
     @NestedConfigurationProperty
+    @Getter
+    @Setter
     private TeamsConfiguration teams;
+    @NestedConfigurationProperty
+    @Getter
+    @Setter
+    private NetworkConfig network;
+    @Getter
+    @Setter
     @NotNull(message = "Update Interval must be specified")
     private Integer updateInterval;
-
-    public List<ServiceConfig> getServices() {
-        return services;
-    }
 
     @Bean
     public ThreadPoolTaskScheduler threadPoolTaskScheduler(){
@@ -38,19 +46,4 @@ public class Config {
         return threadPoolTaskScheduler;
     }
 
-    public TeamsConfiguration getTeams() {
-        return teams;
-    }
-
-    public void setTeams(TeamsConfiguration teams) {
-        this.teams = teams;
-    }
-
-    public Integer getUpdateInterval() {
-        return updateInterval;
-    }
-
-    public void setUpdateInterval(Integer updateInterval) {
-        this.updateInterval = updateInterval;
-    }
 }

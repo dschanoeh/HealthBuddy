@@ -20,9 +20,11 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.time.format.DateTimeFormatter;
 
 public class TeamsNotificationChannel implements NotificationChannel {
     private static final Logger logger = LogManager.getLogger(ServiceMonitor.class);
+    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd - HH:mm:ss z");
 
     TeamsConfiguration configuration;
     RequestConfig requestConfig;
@@ -57,7 +59,7 @@ public class TeamsNotificationChannel implements NotificationChannel {
                     section.getFacts().add(new TeamsMessageSection.Fact("Status Code", String.valueOf(i.getHttpStatus())));
                 }
                 if(i.getStartDate() != null) {
-                    section.getFacts().add(new TeamsMessageSection.Fact("Start Date", i.getStartDate().toString()));
+                    section.getFacts().add(new TeamsMessageSection.Fact("Start Date", dateTimeFormatter.format(i.getStartDate())));
                 }
                 break;
             case NOT_REACHABLE:
@@ -67,7 +69,7 @@ public class TeamsNotificationChannel implements NotificationChannel {
                     section.getFacts().add(new TeamsMessageSection.Fact("Environment", i.getEnvironment()));
                 }
                 if(i.getStartDate() != null) {
-                    section.getFacts().add(new TeamsMessageSection.Fact("Start Date", i.getStartDate().toString()));
+                    section.getFacts().add(new TeamsMessageSection.Fact("Start Date", dateTimeFormatter.format(i.getStartDate())));
                 }
                 break;
             default:
@@ -93,10 +95,10 @@ public class TeamsNotificationChannel implements NotificationChannel {
             section.getFacts().add(new TeamsMessageSection.Fact("Environment", i.getEnvironment()));
         }
         if(i.getStartDate() != null) {
-            section.getFacts().add(new TeamsMessageSection.Fact("Start Date", i.getStartDate().toString()));
+            section.getFacts().add(new TeamsMessageSection.Fact("Start Date", dateTimeFormatter.format(i.getStartDate())));
         }
         if(i.getEndDate() != null) {
-            section.getFacts().add(new TeamsMessageSection.Fact("End Date", i.getEndDate().toString()));
+            section.getFacts().add(new TeamsMessageSection.Fact("End Date", dateTimeFormatter.format(i.getEndDate())));
         }
         if(i.getEndDate() != null && i.getStartDate() != null) {
             Duration duration = Duration.between(i.getStartDate(), i.getEndDate());

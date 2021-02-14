@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
+import java.net.URISyntaxException;
 
 @Component
 public class ServiceMonitor{
@@ -30,8 +31,12 @@ public class ServiceMonitor{
         NotificationChannel channel = new TeamsNotificationChannel(config.getTeams());
 
         for(ServiceConfig c : config.getServices()) {
-            EndpointEvaluator evaluator = new EndpointEvaluator(c, config.getNetwork(), channel);
-            scheduler.scheduleAtFixedRate(evaluator::evaluate, config.getUpdateInterval());
+            try {
+                EndpointEvaluator evaluator = new EndpointEvaluator(c, config.getNetwork(), channel);
+                scheduler.scheduleAtFixedRate(evaluator::evaluate, config.getUpdateInterval());
+            } catch (URISyntaxException ex) {
+                logger.log(Level.ERROR, "Could not set up evaluator - Malformed URL found", ex);
+            }
         }
     }
 

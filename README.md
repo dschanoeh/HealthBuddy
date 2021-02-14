@@ -6,7 +6,11 @@
 HealthBuddy is a service that periodically queries health endpoints of one
 or more services and generates alerts in case these queries fail.
 
-Currently, only the specific Microsoft Teams channel webhooks are supported.
+It supports:
+* Microsoft Teams channel webhooks
+* Optional Basic Auth
+* Operation through an HTTP proxy
+* A configurable list of acceptable status codes
 
 ## Building
 
@@ -32,9 +36,15 @@ services:
     url: http://127.0.0.1
     allowedStatusCodes:
       - 200
+    userName: basicAuthUser
+    password: basicAuthPass
 # The Teams webhook to be called for alerts
 teams:
   webHookURL: http://127.0.0.1/hook
-
+# Optional network configuration
+network:
+  httpProxyHost: 127.0.0.1
+  httpProxyPort: 8080
+  timeout: 5000
 ```
 

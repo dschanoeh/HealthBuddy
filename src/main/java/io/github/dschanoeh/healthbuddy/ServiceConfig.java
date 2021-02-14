@@ -31,4 +31,7 @@ public class ServiceConfig {
     @Getter
     @Setter
     private String password;
+    @Getter
+    @Setter
+    private String environment;
 }

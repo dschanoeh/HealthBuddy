@@ -91,6 +91,7 @@ public class EndpointEvaluator {
                     }
                     currentIncident.setHttpStatus(statusCode);
                     currentIncident.setServiceName(config.getName());
+                    currentIncident.setEnvironment(config.getEnvironment());
                     currentIncident.open();
                 }
             } else {
@@ -103,6 +104,7 @@ public class EndpointEvaluator {
             if(currentIncident == null || !currentIncident.isOpen()) {
                 currentIncident = new Incident(Incident.Type.NOT_REACHABLE, channel);
                 currentIncident.setServiceName(config.getName());
+                currentIncident.setEnvironment(config.getEnvironment());
                 currentIncident.open();
             }
         } catch (IOException e) {
@@ -110,6 +112,7 @@ public class EndpointEvaluator {
             if(currentIncident == null || !currentIncident.isOpen()) {
                 currentIncident = new Incident(Incident.Type.NOT_REACHABLE, channel);
                 currentIncident.setServiceName(config.getName());
+                currentIncident.setEnvironment(config.getEnvironment());
                 currentIncident.open();
             }
         }

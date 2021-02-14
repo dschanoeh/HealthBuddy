@@ -19,6 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.time.Duration;
 
 public class TeamsNotificationChannel implements NotificationChannel {
     private static final Logger logger = LogManager.getLogger(ServiceMonitor.class);
@@ -37,14 +38,41 @@ public class TeamsNotificationChannel implements NotificationChannel {
         logger.log(Level.INFO, "Sending openIncident notification");
         TeamsMessage message = new TeamsMessage();
         message.setThemeColor(TeamsMessage.COLOR_RED);
-        message.setTitle(String.format("New Incident (%s) for %s", i.getType().toString(), i.getServiceName()));
+        message.setTitle("New Incident");
+        message.setSummary(String.format("A new incident for the service '%s' was opened", i.getServiceName()));
+        TeamsMessageSection section = new TeamsMessageSection();
+        message.getSections().add(section);
+
         switch(i.getType()) {
             case UNEXPECTED_RESPONSE:
-                message.setText(String.format("Response: %s",i.getBody()));
+                section.setActivityTitle("Unexpected response from observed endpoint");
+                section.getFacts().add(new TeamsMessageSection.Fact("Service", i.getServiceName()));
+                if(i.getEnvironment() != null) {
+                    section.getFacts().add(new TeamsMessageSection.Fact("Environment", i.getEnvironment()));
+                }
+                if(i.getBody() != null) {
+                    section.getFacts().add(new TeamsMessageSection.Fact("Response", i.getBody()));
+                }
+                if(i.getHttpStatus() != null) {
+                    section.getFacts().add(new TeamsMessageSection.Fact("Status Code", String.valueOf(i.getHttpStatus())));
+                }
+                if(i.getStartDate() != null) {
+                    section.getFacts().add(new TeamsMessageSection.Fact("Start Date", i.getStartDate().toString()));
+                }
                 break;
             case NOT_REACHABLE:
-                message.setText("Service not reachable.");
+                section.setActivityTitle("The observed endpoint is not reachable");
+                section.getFacts().add(new TeamsMessageSection.Fact("Service", i.getServiceName()));
+                if(i.getEnvironment() != null) {
+                    section.getFacts().add(new TeamsMessageSection.Fact("Environment", i.getEnvironment()));
+                }
+                if(i.getStartDate() != null) {
+                    section.getFacts().add(new TeamsMessageSection.Fact("Start Date", i.getStartDate().toString()));
+                }
                 break;
+            default:
+                logger.log(Level.ERROR, "Received message of unknown type");
+                return;
         }
 
         sendMessage(message);
@@ -55,7 +83,27 @@ public class TeamsNotificationChannel implements NotificationChannel {
         logger.log(Level.INFO, "Sending closeIncident notification");
         TeamsMessage message = new TeamsMessage();
         message.setThemeColor(TeamsMessage.COLOR_GREEN);
-        message.setText("The incident has been resolved.");
+        message.setTitle("Incident Resolved");
+        message.setSummary(String.format("The incident for the service '%s' has been resolved", i.getServiceName()));
+        TeamsMessageSection section = new TeamsMessageSection();
+        message.getSections().add(section);
+
+        section.getFacts().add(new TeamsMessageSection.Fact("Service", i.getServiceName()));
+        if(i.getEnvironment() != null) {
+            section.getFacts().add(new TeamsMessageSection.Fact("Environment", i.getEnvironment()));
+        }
+        if(i.getStartDate() != null) {
+            section.getFacts().add(new TeamsMessageSection.Fact("Start Date", i.getStartDate().toString()));
+        }
+        if(i.getEndDate() != null) {
+            section.getFacts().add(new TeamsMessageSection.Fact("End Date", i.getEndDate().toString()));
+        }
+        if(i.getEndDate() != null && i.getStartDate() != null) {
+            Duration duration = Duration.between(i.getStartDate(), i.getEndDate());
+            Long s = duration.getSeconds();
+            String durationString = String.format("%d:%02d:%02d", s / 3600, (s % 3600) / 60, (s % 60));
+            section.getFacts().add(new TeamsMessageSection.Fact("Duration", durationString));
+        }
         sendMessage(message);
     }
 

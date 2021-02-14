@@ -1,22 +1,35 @@
 package io.github.dschanoeh.healthbuddy;
 
 import io.github.dschanoeh.healthbuddy.notifications.NotificationChannel;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 public class Incident {
     public static enum Type {UNEXPECTED_RESPONSE, NOT_REACHABLE};
     public static enum State { ACTIVE, RESOLVED }
 
-    private Date startDate;
-    private Date endDate;
+    @Getter
+    private ZonedDateTime startDate;
+    @Getter
+    private ZonedDateTime endDate;
+    @Getter
     private Type type;
     private State state;
+    @Getter
+    @Setter
     private String serviceName;
     private NotificationChannel channel;
+    @Getter
+    @Setter
     private String body;
+    @Getter
+    @Setter
     private Integer httpStatus;
-
+    @Getter
+    @Setter
+    private String environment;
 
     public Incident(Type type, NotificationChannel channel) {
         this.type = type;
@@ -24,13 +37,13 @@ public class Incident {
     }
 
     public void open() {
-        this.startDate = new Date();
+        this.startDate = ZonedDateTime.now();
         this.state = State.ACTIVE;
         channel.openIncident(this);
     }
 
     public void close() {
-        this.endDate = new Date();
+        this.endDate = ZonedDateTime.now();
         this.state = State.RESOLVED;
         channel.closeIncident(this);
     }
@@ -38,37 +51,4 @@ public class Incident {
     public Boolean isOpen() {
         return state == State.ACTIVE;
     }
-
-    public State getState() {
-        return state;
-    }
-
-    public Integer getHttpStatus() {
-        return httpStatus;
-    }
-
-    public void setHttpStatus(Integer httpStatus) {
-        this.httpStatus = httpStatus;
-    }
-
-    public String getBody() {
-        return body;
-    }
-
-    public void setBody(String body) {
-        this.body = body;
-    }
-
-    public Type getType() {
-        return type;
-    }
-
-    public String getServiceName() {
-        return serviceName;
-    }
-
-    public void setServiceName(String serviceName) {
-        this.serviceName = serviceName;
-    }
-
 }

@@ -24,7 +24,7 @@ public class Config {
     @NestedConfigurationProperty
     @Getter
     @Setter
-    private final List<ServiceConfig> services = new ArrayList<>();
+    private List<ServiceConfig> services = new ArrayList<>();
     @NestedConfigurationProperty
     @Getter
     @Setter

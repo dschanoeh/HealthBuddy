@@ -11,6 +11,7 @@ It supports:
 * Optional Basic Auth
 * Operation through an HTTP proxy
 * A configurable list of acceptable status codes
+* Spring boot actuator body evaluation based on a list of acceptable status
 
 ## Building
 
@@ -34,8 +35,8 @@ services:
       - 200
   - name: other-service prod
     url: http://127.0.0.1
-    allowedStatusCodes:
-      - 200
+    allowedActuatorStatus:
+      - UP
     userName: basicAuthUser
     password: basicAuthPass
 # The Teams webhook to be called for alerts
@@ -47,7 +48,25 @@ network:
   httpProxyPort: 8080
   timeout: 5000
 ```
-It is also possible to set parameters through the environment:
+
+### Service Configuration
+For each service, a name and a URL must be configured. Optionally, an environment can be
+specified which will be included in alerts.
+
+By default, an established connection to the health endpoint is deemed a success. Additionally,
+lists of allowed HTTP status codes and lists of allowed actuator status can be specified that
+will then also be evaluated.
+
+The actuator status evaluation assumes the response body to be of the following form (following
+the Spring Boot actuator schema):
+```json
+{"status":"UP"}
+```
+
+If user name and password (both or none must be present) are provided, HealthBuddy will perform
+basic authentication when calling the health endpoint.
+
+In addition to the config file, it is also possible to set parameters through the environment:
 ```shell
 export TEAMS_WEBHOOKURL="http://127.0.0.1/hook"
 ```

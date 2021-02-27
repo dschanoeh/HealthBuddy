@@ -149,4 +149,17 @@ public class EndpointEvaluatorTest {
         evaluator.evaluate();
         verify(channel, only()).openIncident(any());
     }
+
+    @Test
+    public void noStatusCodeTest(Hoverfly hoverfly) throws URISyntaxException {
+        hoverfly.simulate(dsl(service(SAMPLE_HEALTHY_SERVICE).get(SAMPLE_HEALTH_PATH).willReturn(serverError().body(
+                jsonWithSingleQuotes("{'status':'UP'}")))));
+        ServiceConfig config = new ServiceConfig();
+        config.setUrl(SAMPLE_HEALTHY_SERVICE +SAMPLE_HEALTH_PATH);
+        config.setName(SAMPLE_SERVICE_NAME);
+        config.setAllowedActuatorStatus(Arrays.asList("UP"));
+        EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channel);
+        evaluator.evaluate();
+        verify(channel, never()).openIncident(any());
+    }
 }

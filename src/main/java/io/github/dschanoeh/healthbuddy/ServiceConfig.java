@@ -21,7 +21,6 @@ public class ServiceConfig {
     @Getter
     @Setter
     private String name;
-    @NonNull
     @Getter
     @Setter
     private List<Integer> allowedStatusCodes;

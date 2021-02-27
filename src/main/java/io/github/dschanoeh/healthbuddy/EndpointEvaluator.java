@@ -96,10 +96,12 @@ public class EndpointEvaluator {
             Boolean validStatus = true;
             Boolean validBody = true;
 
-            // Always validate status code
-            if(!config.getAllowedStatusCodes().contains(statusCode)) {
-                validStatus = false;
-                logger.log(Level.WARN, "Status code not matching allowed status codes");
+            // Optionally validate status code
+            if(config.getAllowedStatusCodes() != null) {
+                if (!config.getAllowedStatusCodes().contains(statusCode)) {
+                    validStatus = false;
+                    logger.log(Level.WARN, "Status code not matching allowed status codes");
+                }
             }
 
             // Optionally validate actuator status

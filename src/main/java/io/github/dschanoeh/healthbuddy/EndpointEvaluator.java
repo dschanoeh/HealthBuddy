@@ -49,9 +49,14 @@ public class EndpointEvaluator {
         URI uri = new URI(config.getUrl());
         RequestConfig.Builder builder = RequestConfig.custom();
 
-        if(networkConfig.getHttpProxyHost() != null) {
-            HttpHost proxy = new HttpHost(networkConfig.getHttpProxyHost(), networkConfig.getHttpProxyPort());
-            builder.setProxy(proxy);
+        if(networkConfig != null) {
+            if(networkConfig.getHttpProxyHost() != null) {
+                HttpHost proxy = new HttpHost(networkConfig.getHttpProxyHost(), networkConfig.getHttpProxyPort());
+                builder.setProxy(proxy);
+            }
+            if(networkConfig.getTimeout() != null) {
+                builder.setConnectTimeout(networkConfig.getTimeout());
+            }
         }
 
         if(config.getUserName() != null && config.getPassword() != null) {
@@ -69,7 +74,6 @@ public class EndpointEvaluator {
             context.setAuthCache(cache);
         }
 
-        builder.setConnectTimeout(networkConfig.getTimeout());
         this.requestConfig = builder.build();
     }
 

@@ -1,5 +1,7 @@
 package io.github.dschanoeh.healthbuddy;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.dschanoeh.healthbuddy.notifications.NotificationChannel;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -22,6 +24,7 @@ import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -30,13 +33,13 @@ public class EndpointEvaluator {
     private static final Logger logger = LogManager.getLogger(ServiceMonitor.class);
 
     private RequestConfig requestConfig;
-    private ServiceConfig config;
+    private final ServiceConfig config;
     private Incident currentIncident;
-    private NotificationChannel channel;
-    private NetworkConfig networkConfig;
-    private CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-    private AuthCache cache = new BasicAuthCache();
-    private HttpClientContext context = HttpClientContext.create();
+    private final NotificationChannel channel;
+    private final NetworkConfig networkConfig;
+    private final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+    private final AuthCache cache = new BasicAuthCache();
+    private final HttpClientContext context = HttpClientContext.create();
 
     public EndpointEvaluator(ServiceConfig config, NetworkConfig networkConfig, NotificationChannel channel) throws URISyntaxException {
         this.config = config;
@@ -83,14 +86,34 @@ public class EndpointEvaluator {
             HttpResponse response = client.execute(new HttpGet(config.getUrl()), context);
             int statusCode = response.getStatusLine().getStatusCode();
             logger.log(Level.DEBUG, "Received status code {}", statusCode);
+            HttpEntity entity = response.getEntity();
+            String body = null;
+            if(entity != null) {
+                body = EntityUtils.toString(entity);
+                logger.log(Level.DEBUG, "Received body {}", body);
+            }
 
+            Boolean validStatus = true;
+            Boolean validBody = true;
+
+            // Always validate status code
             if(!config.getAllowedStatusCodes().contains(statusCode)) {
+                validStatus = false;
                 logger.log(Level.WARN, "Status code not matching allowed status codes");
+            }
+
+            // Optionally validate actuator status
+            if(config.getAllowedActuatorStatus() != null) {
+                validBody = validateBody(body);
+                if(!validBody) {
+                    logger.log(Level.WARN, "Body not matching criteria");
+                }
+            }
+
+            if(!(validStatus && validBody)) {
                 if(currentIncident == null || !currentIncident.isOpen()) {
-                    HttpEntity entity = response.getEntity();
                     currentIncident = new Incident(Incident.Type.UNEXPECTED_RESPONSE, channel);
-                    if(entity != null) {
-                        String body = EntityUtils.toString(entity);
+                    if(body != null) {
                         currentIncident.setBody(body);
                     }
                     currentIncident.setHttpStatus(statusCode);
@@ -120,6 +143,20 @@ public class EndpointEvaluator {
                 currentIncident.open();
             }
         }
+    }
 
+    private boolean validateBody(String body) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            ActuatorHealthResponse response = objectMapper.readValue(body, ActuatorHealthResponse.class);
+            if(!config.getAllowedActuatorStatus().contains(response.getStatus())) {
+                logger.log(Level.WARN, "Received status {} is not an allowed status", response.getStatus());
+                return false;
+            }
+        } catch (JsonProcessingException ex) {
+            logger.log(Level.WARN, "Was not able to parse actuator response", ex);
+            return false;
+        }
+        return true;
     }
 }

@@ -27,6 +27,9 @@ public class ServiceConfig {
     private List<Integer> allowedStatusCodes;
     @Getter
     @Setter
+    private List<String> allowedActuatorStatus;
+    @Getter
+    @Setter
     private String userName;
     @Getter
     @Setter

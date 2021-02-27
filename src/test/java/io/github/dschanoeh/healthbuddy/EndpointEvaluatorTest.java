@@ -10,14 +10,17 @@ import io.specto.hoverfly.junit5.api.HoverflyCore;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import static io.specto.hoverfly.junit.dsl.ResponseCreators.serverError;
-import static org.mockito.Mockito.*;
+
 import static io.specto.hoverfly.junit.core.SimulationSource.dsl;
 import static io.specto.hoverfly.junit.dsl.HoverflyDsl.service;
+import static io.specto.hoverfly.junit.dsl.HttpBodyConverter.jsonWithSingleQuotes;
+import static io.specto.hoverfly.junit.dsl.ResponseCreators.serverError;
 import static io.specto.hoverfly.junit.dsl.ResponseCreators.success;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(HoverflyExtension.class)
 @HoverflyCore(mode = HoverflyMode.SIMULATE, config = @HoverflyConfig(proxyPort = 8080))
@@ -35,8 +38,8 @@ public class EndpointEvaluatorTest {
             (SAMPLE_BASIC_AUTH_USER + ":" + SAMPLE_BASIC_AUTH_PASS).getBytes(StandardCharsets.ISO_8859_1)
     ));
 
-    private NotificationChannel channel = mock(NotificationChannel.class);
-    private NetworkConfig networkConfig = new NetworkConfig();
+    private final NotificationChannel channel = mock(NotificationChannel.class);
+    private final NetworkConfig networkConfig = new NetworkConfig();
 
     public EndpointEvaluatorTest() {
         networkConfig.setHttpProxyHost("127.0.0.1");
@@ -103,5 +106,47 @@ public class EndpointEvaluatorTest {
         evaluator.evaluate();
         hoverfly.verify(service(SAMPLE_HEALTHY_SERVICE).get(SAMPLE_HEALTH_PATH).anyBody().header("Authorization", "Basic " + SAMPLE_BASIC_AUTH_BASE64));
         verify(channel, never()).openIncident(any());
+    }
+
+    @Test
+    public void validBodyTest(Hoverfly hoverfly) throws URISyntaxException {
+        hoverfly.simulate(dsl(service(SAMPLE_HEALTHY_SERVICE).get(SAMPLE_HEALTH_PATH).willReturn(success().body(
+                jsonWithSingleQuotes("{'status':'UP'}")))));
+        ServiceConfig config = new ServiceConfig();
+        config.setUrl(SAMPLE_HEALTHY_SERVICE +SAMPLE_HEALTH_PATH);
+        config.setName(SAMPLE_SERVICE_NAME);
+        config.setAllowedStatusCodes(Arrays.asList(200));
+        config.setAllowedActuatorStatus(Arrays.asList("UP"));
+        EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channel);
+        evaluator.evaluate();
+        verify(channel, never()).openIncident(any());
+    }
+
+    @Test
+    public void invalidBodyTest(Hoverfly hoverfly) throws URISyntaxException {
+        hoverfly.simulate(dsl(service(SAMPLE_HEALTHY_SERVICE).get(SAMPLE_HEALTH_PATH).willReturn(success().body(
+                jsonWithSingleQuotes("{'status':'UNKNOWN','details':{'foo':'bar'}}")))));
+        ServiceConfig config = new ServiceConfig();
+        config.setUrl(SAMPLE_HEALTHY_SERVICE +SAMPLE_HEALTH_PATH);
+        config.setName(SAMPLE_SERVICE_NAME);
+        config.setAllowedStatusCodes(Arrays.asList(200));
+        config.setAllowedActuatorStatus(Arrays.asList("UP"));
+        EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channel);
+        evaluator.evaluate();
+        verify(channel, only()).openIncident(any());
+    }
+
+    @Test
+    public void emptyBodyTest(Hoverfly hoverfly) throws URISyntaxException {
+        hoverfly.simulate(dsl(service(SAMPLE_HEALTHY_SERVICE).get(SAMPLE_HEALTH_PATH).willReturn(success().body(
+                jsonWithSingleQuotes("")))));
+        ServiceConfig config = new ServiceConfig();
+        config.setUrl(SAMPLE_HEALTHY_SERVICE +SAMPLE_HEALTH_PATH);
+        config.setName(SAMPLE_SERVICE_NAME);
+        config.setAllowedStatusCodes(Arrays.asList(200));
+        config.setAllowedActuatorStatus(Arrays.asList("UP"));
+        EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channel);
+        evaluator.evaluate();
+        verify(channel, only()).openIncident(any());
     }
 }

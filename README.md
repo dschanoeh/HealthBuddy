@@ -47,4 +47,8 @@ network:
   httpProxyPort: 8080
   timeout: 5000
 ```
+It is also possible to set parameters through the environment:
+```shell
+export TEAMS_WEBHOOKURL="http://127.0.0.1/hook"
+```
 

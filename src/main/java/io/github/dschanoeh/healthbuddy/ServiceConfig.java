@@ -16,10 +16,6 @@ public class ServiceConfig {
     @NonNull
     @Getter
     @Setter
-    private Integer checkInterval;
-    @NonNull
-    @Getter
-    @Setter
     private String name;
     @Getter
     @Setter

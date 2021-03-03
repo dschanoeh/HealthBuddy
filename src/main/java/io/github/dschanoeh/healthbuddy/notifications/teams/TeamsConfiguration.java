@@ -1,12 +1,23 @@
 package io.github.dschanoeh.healthbuddy.notifications.teams;
 
-public class TeamsConfiguration {
-    private String webHookURL;
-    public String getWebHookURL() {
-        return webHookURL;
-    }
+import lombok.Setter;
+import org.hibernate.validator.constraints.URL;
+import org.springframework.validation.annotation.Validated;
 
-    public void setWebHookURL(String webHookURL) {
-        this.webHookURL = webHookURL;
+import java.net.MalformedURLException;
+
+@Validated
+public class TeamsConfiguration {
+    @Setter
+    @URL
+    private String webHookURL;
+
+    public java.net.URL getWebHookURL() {
+        try {
+            java.net.URL url = new java.net.URL(webHookURL);
+            return url;
+        } catch (MalformedURLException e) {
+            return null;
+        }
     }
 }

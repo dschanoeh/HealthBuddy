@@ -2,6 +2,7 @@ package io.github.dschanoeh.healthbuddy;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.URL;
 import org.springframework.lang.NonNull;
 import org.springframework.validation.annotation.Validated;
 
@@ -12,6 +13,7 @@ public class ServiceConfig {
     @NonNull
     @Getter
     @Setter
+    @URL
     private String url;
     @NonNull
     @Getter

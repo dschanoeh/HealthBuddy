@@ -6,7 +6,8 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.validation.annotation.Validated;
@@ -32,7 +33,7 @@ public class Config {
     @NestedConfigurationProperty
     @Getter
     @Setter
-    private NetworkConfig network;
+    private NetworkConfig network = new NetworkConfig();
     @Getter
     @Setter
     @NotNull(message = "Update Interval must be specified")

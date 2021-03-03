@@ -13,4 +13,12 @@ public class NetworkConfig {
     @Getter
     @Setter
     private Integer timeout = 5000;
+
+    public ProxyConfiguration getProxyConfiguration() {
+        if(httpProxyHost != null && httpProxyPort != null) {
+            return ProxyConfiguration.fromNetworkConfig(this);
+        } else {
+            return ProxyConfiguration.fromEnvironment();
+        }
+    }
 }

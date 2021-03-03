@@ -3,9 +3,12 @@ package io.github.dschanoeh.healthbuddy.notifications.teams;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.dschanoeh.healthbuddy.Incident;
+import io.github.dschanoeh.healthbuddy.NetworkConfig;
+import io.github.dschanoeh.healthbuddy.ProxyConfiguration;
 import io.github.dschanoeh.healthbuddy.ServiceMonitor;
 import io.github.dschanoeh.healthbuddy.notifications.NotificationChannel;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
@@ -29,11 +32,21 @@ public class TeamsNotificationChannel implements NotificationChannel {
     TeamsConfiguration configuration;
     RequestConfig requestConfig;
     ObjectMapper mapper = new ObjectMapper();
+    private final NetworkConfig networkConfig;
 
-    public TeamsNotificationChannel(TeamsConfiguration configuration) {
+    public TeamsNotificationChannel(TeamsConfiguration configuration, NetworkConfig networkConfig) {
+        this.networkConfig = networkConfig;
         logger.log(Level.INFO, "TeamsNotificationChannel created");
         this.configuration = configuration;
-        requestConfig = RequestConfig.custom().setConnectTimeout(5 * 1000).build();
+
+        RequestConfig.Builder builder = RequestConfig.custom();
+        builder.setConnectTimeout(5 * 1000);
+        ProxyConfiguration proxyConfiguration = networkConfig.getProxyConfiguration();
+        HttpHost proxy = proxyConfiguration.getProxyForURL(configuration.getWebHookURL());
+        if(proxy != null) {
+            builder.setProxy(proxy);
+        }
+        requestConfig = builder.build();
     }
     @Override
     public void openIncident(Incident i) {
@@ -120,7 +133,7 @@ public class TeamsNotificationChannel implements NotificationChannel {
         logger.log(Level.INFO, "Message: {}", messageString);
 
         try (CloseableHttpClient client = HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).build()) {
-            HttpPost httpPost = new HttpPost(configuration.getWebHookURL());
+            HttpPost httpPost = new HttpPost(configuration.getWebHookURL().toString());
             httpPost.setHeader("Content-type", "application/json");
             StringEntity entity = new StringEntity(messageString);
             httpPost.setEntity(entity);

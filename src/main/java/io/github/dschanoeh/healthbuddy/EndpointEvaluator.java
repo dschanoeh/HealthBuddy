@@ -14,7 +14,6 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.client.utils.URIUtils;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
@@ -26,8 +25,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class EndpointEvaluator {
     private static final Logger logger = LogManager.getLogger(ServiceMonitor.class);
@@ -41,20 +40,21 @@ public class EndpointEvaluator {
     private final AuthCache cache = new BasicAuthCache();
     private final HttpClientContext context = HttpClientContext.create();
 
-    public EndpointEvaluator(ServiceConfig config, NetworkConfig networkConfig, NotificationChannel channel) throws URISyntaxException {
+    public EndpointEvaluator(ServiceConfig config, NetworkConfig networkConfig, NotificationChannel channel) throws MalformedURLException {
         this.config = config;
         this.channel = channel;
         this.networkConfig = networkConfig;
         setupRequestConfig();
     }
 
-    private void setupRequestConfig() throws URISyntaxException {
-        URI uri = new URI(config.getUrl());
+    private void setupRequestConfig() throws MalformedURLException {
+        URL url = new URL(config.getUrl());
         RequestConfig.Builder builder = RequestConfig.custom();
 
         if(networkConfig != null) {
-            if(networkConfig.getHttpProxyHost() != null) {
-                HttpHost proxy = new HttpHost(networkConfig.getHttpProxyHost(), networkConfig.getHttpProxyPort());
+            ProxyConfiguration proxyConfiguration = networkConfig.getProxyConfiguration();
+            HttpHost proxy = proxyConfiguration.getProxyForURL(url);
+            if(proxy != null) {
                 builder.setProxy(proxy);
             }
             if(networkConfig.getTimeout() != null) {
@@ -70,7 +70,7 @@ public class EndpointEvaluator {
             credentialsProvider.setCredentials(AuthScope.ANY, credentials);
 
             // Set up preemptive Basic Authentication for the host
-            HttpHost httpHost = URIUtils.extractHost(uri);
+            HttpHost httpHost = new HttpHost(url.getHost());
             cache.put(httpHost, new BasicScheme());
 
             context.setCredentialsProvider(credentialsProvider);

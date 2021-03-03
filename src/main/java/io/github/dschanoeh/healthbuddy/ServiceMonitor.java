@@ -8,8 +8,9 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
+
 import javax.annotation.PostConstruct;
-import java.net.URISyntaxException;
+import java.net.MalformedURLException;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -31,7 +32,7 @@ public class ServiceMonitor{
     @PostConstruct
     public void startMonitoring() {
         logger.log(Level.DEBUG, "Setting up evaluators");
-        NotificationChannel channel = new TeamsNotificationChannel(config.getTeams());
+        NotificationChannel channel = new TeamsNotificationChannel(config.getTeams(), config.getNetwork());
         Date d = new Date();
         LocalDateTime firstExecution = LocalDateTime.now();
         firstExecution = firstExecution.plusNanos(EVALUATION_SPREAD_MS*1000*1000);
@@ -41,7 +42,7 @@ public class ServiceMonitor{
                 EndpointEvaluator evaluator = new EndpointEvaluator(c, config.getNetwork(), channel);
                 scheduler.scheduleAtFixedRate(evaluator::evaluate, java.sql.Timestamp.valueOf(firstExecution), config.getUpdateInterval());
                 firstExecution = firstExecution.plusNanos(EVALUATION_SPREAD_MS*1000*1000);
-            } catch (URISyntaxException ex) {
+            } catch (MalformedURLException ex) {
                 logger.log(Level.ERROR, "Could not set up evaluator - Malformed URL found", ex);
             }
         }

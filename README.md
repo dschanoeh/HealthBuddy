@@ -71,3 +71,6 @@ In addition to the config file, it is also possible to set parameters through th
 export TEAMS_WEBHOOKURL="http://127.0.0.1/hook"
 ```
 
+### Network Configuration
+Optionally, a network configuration with a http(s) proxy can be provided.
+If none is provided, the environment variables HTTP_PROXY and HTTPS_PROXY will be evaluated.

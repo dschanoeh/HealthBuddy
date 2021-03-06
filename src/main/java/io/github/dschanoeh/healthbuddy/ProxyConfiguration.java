@@ -165,7 +165,7 @@ public class ProxyConfiguration {
                 }
                 return auth;
             case "https":
-                Authentication auth2 = this.getHttpAuthentication();
+                Authentication auth2 = this.getHttpsAuthentication();
                 if(auth2 != null) {
                     logger.log(Level.DEBUG, "Using proxy authentication for url {}", url.toString());
                 } else {

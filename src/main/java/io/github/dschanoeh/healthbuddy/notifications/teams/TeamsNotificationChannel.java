@@ -10,10 +10,15 @@ import io.github.dschanoeh.healthbuddy.notifications.NotificationChannel;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
@@ -33,6 +38,8 @@ public class TeamsNotificationChannel implements NotificationChannel {
     RequestConfig requestConfig;
     ObjectMapper mapper = new ObjectMapper();
     private final NetworkConfig networkConfig;
+    CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+    private final HttpClientContext context = HttpClientContext.create();
 
     public TeamsNotificationChannel(TeamsConfiguration configuration, NetworkConfig networkConfig) {
         this.networkConfig = networkConfig;
@@ -45,6 +52,12 @@ public class TeamsNotificationChannel implements NotificationChannel {
         HttpHost proxy = proxyConfiguration.getProxyForURL(configuration.getWebHookURL());
         if(proxy != null) {
             builder.setProxy(proxy);
+        }
+        ProxyConfiguration.Authentication auth = proxyConfiguration.getAuthenticationForURL(configuration.getWebHookURL());
+        if (auth != null) {
+            credentialsProvider.setCredentials(new AuthScope(proxy.getHostName(), proxy.getPort()),
+                    new UsernamePasswordCredentials(auth.getUser(), auth.getPassword()));
+            context.setCredentialsProvider(credentialsProvider);
         }
         requestConfig = builder.build();
     }
@@ -137,7 +150,7 @@ public class TeamsNotificationChannel implements NotificationChannel {
             httpPost.setHeader("Content-type", "application/json");
             StringEntity entity = new StringEntity(messageString);
             httpPost.setEntity(entity);
-            HttpResponse response = client.execute(httpPost);
+            HttpResponse response = client.execute(httpPost, context);
             int statusCode = response.getStatusLine().getStatusCode();
             logger.log(Level.DEBUG, "Received status code {}", statusCode);
 

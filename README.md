@@ -1,7 +1,7 @@
 # HealthBuddy
 
 ![](https://github.com/dschanoeh/HealthBuddy/workflows/build/badge.svg)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+![GitHub](https://img.shields.io/github/license/dschanoeh/HealthBuddy)
 
 HealthBuddy is a service that periodically queries health endpoints of one
 or more services and generates alerts in case these queries fail.

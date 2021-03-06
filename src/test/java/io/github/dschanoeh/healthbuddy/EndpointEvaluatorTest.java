@@ -52,6 +52,8 @@ public class EndpointEvaluatorTest {
         config.setUrl(INVALID_URL);
         config.setName(SAMPLE_SERVICE_NAME);
         NetworkConfig customNetworkConf = new NetworkConfig();
+        customNetworkConf.setHttpProxyHost("127.0.0.2");
+        customNetworkConf.setHttpProxyPort(80);
         EndpointEvaluator evaluator = new EndpointEvaluator(config, customNetworkConf, channel);
         evaluator.evaluate();
         verify(channel).openIncident(any());

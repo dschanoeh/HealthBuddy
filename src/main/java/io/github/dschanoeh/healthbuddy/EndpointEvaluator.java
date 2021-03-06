@@ -57,6 +57,12 @@ public class EndpointEvaluator {
             if(proxy != null) {
                 builder.setProxy(proxy);
             }
+            ProxyConfiguration.Authentication auth = proxyConfiguration.getAuthenticationForURL(url);
+            if (auth != null) {
+                credentialsProvider.setCredentials(new AuthScope(proxy.getHostName(), proxy.getPort()),
+                        new UsernamePasswordCredentials(auth.getUser(), auth.getPassword()));
+                context.setCredentialsProvider(credentialsProvider);
+            }
             if(networkConfig.getTimeout() != null) {
                 builder.setConnectTimeout(networkConfig.getTimeout());
             }

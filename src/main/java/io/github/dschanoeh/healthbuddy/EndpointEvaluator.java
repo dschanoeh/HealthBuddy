@@ -23,6 +23,7 @@ import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -30,6 +31,8 @@ import java.net.URL;
 
 public class EndpointEvaluator {
     private static final Logger logger = LogManager.getLogger(ServiceMonitor.class);
+    private static final String SERVICE_TC_IDENTIFIER = "service";
+    private static final String ENVIRONMENT_TC_IDENTIFIER = "environment";
 
     private RequestConfig requestConfig;
     private final ServiceConfig config;
@@ -86,7 +89,9 @@ public class EndpointEvaluator {
     }
 
     public void evaluate() {
-        logger.log(Level.INFO, "Evaluating health for {}", config.getName());
+        ThreadContext.put(SERVICE_TC_IDENTIFIER, config.getName());
+        ThreadContext.put(ENVIRONMENT_TC_IDENTIFIER, config.getEnvironment());
+        logger.log(Level.INFO, "Evaluating health...");
         try (CloseableHttpClient client = HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).setDefaultCredentialsProvider(credentialsProvider).build()) {
             HttpResponse response = client.execute(new HttpGet(config.getUrl()), context);
             int statusCode = response.getStatusLine().getStatusCode();

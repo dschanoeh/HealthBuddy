@@ -42,8 +42,8 @@ public class Config {
     @Bean
     public ThreadPoolTaskScheduler threadPoolTaskScheduler(){
         ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
-        threadPoolTaskScheduler.setPoolSize(50);
-        threadPoolTaskScheduler.setThreadNamePrefix("ThreadPoolTaskScheduler");
+        threadPoolTaskScheduler.setPoolSize(services.size());
+        threadPoolTaskScheduler.setThreadNamePrefix("Evaluator");
         return threadPoolTaskScheduler;
     }
 

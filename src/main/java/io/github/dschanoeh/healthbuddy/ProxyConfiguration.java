@@ -85,7 +85,7 @@ public class ProxyConfiguration {
 
         if(httpsHost != null && httpsPort != null) {
             logger.log(Level.DEBUG, "Configuring https proxy...");
-            HttpHost httpsProxy = new HttpHost(httpsHost, Integer.parseInt(httpsPort), "https");
+            HttpHost httpsProxy = new HttpHost(httpsHost, Integer.parseInt(httpsPort), "http");
             c.setHttpsProxy(httpsProxy);
             if(httpsUser != null && httpsPassword != null) {
                 logger.log(Level.DEBUG, "With authentication...");

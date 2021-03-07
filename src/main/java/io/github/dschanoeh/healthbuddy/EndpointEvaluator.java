@@ -61,7 +61,6 @@ public class EndpointEvaluator {
             if (auth != null) {
                 credentialsProvider.setCredentials(new AuthScope(proxy.getHostName(), proxy.getPort()),
                         new UsernamePasswordCredentials(auth.getUser(), auth.getPassword()));
-                context.setCredentialsProvider(credentialsProvider);
             }
             if(networkConfig.getTimeout() != null) {
                 builder.setConnectTimeout(networkConfig.getTimeout());
@@ -88,7 +87,7 @@ public class EndpointEvaluator {
 
     public void evaluate() {
         logger.log(Level.INFO, "Evaluating health for {}", config.getName());
-        try (CloseableHttpClient client = HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).build()) {
+        try (CloseableHttpClient client = HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).setDefaultCredentialsProvider(credentialsProvider).build()) {
             HttpResponse response = client.execute(new HttpGet(config.getUrl()), context);
             int statusCode = response.getStatusLine().getStatusCode();
             logger.log(Level.DEBUG, "Received status code {}", statusCode);

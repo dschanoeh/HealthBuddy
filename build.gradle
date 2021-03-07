@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'io.github.dschanoeh'
-version = '0.3.1'
+version = '0.3.2'
 sourceCompatibility = '8'
 
 repositories {

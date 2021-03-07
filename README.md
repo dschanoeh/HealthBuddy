@@ -71,6 +71,10 @@ In addition to the config file, it is also possible to set parameters through th
 export TEAMS_WEBHOOKURL="http://127.0.0.1/hook"
 ```
 
-### Network Configuration
-Optionally, a network configuration with a http(s) proxy can be provided.
-If none is provided, the environment variables HTTP_PROXY and HTTPS_PROXY will be evaluated.
+### Proxy Configuration
+A proxy can be provided through any of the following means which take precedence in the order
+shown here:
+1. Through the network section of the configuration file
+2. Through Java system properties(`http.proxyHost`, `https.proxyHost` and corresponding 
+   port, user and Password variables)
+3. Through the environment variables HTTP_PROXY and HTTPS_PROXY

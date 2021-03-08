@@ -5,13 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.dschanoeh.healthbuddy.notifications.NotificationChannel;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.AuthCache;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.auth.BasicScheme;
@@ -42,6 +42,7 @@ public class EndpointEvaluator {
     private final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
     private final AuthCache cache = new BasicAuthCache();
     private final HttpClientContext context = HttpClientContext.create();
+    private CloseableHttpClient httpClient;
 
     public EndpointEvaluator(ServiceConfig config, NetworkConfig networkConfig, NotificationChannel channel) throws MalformedURLException {
         this.config = config;
@@ -86,14 +87,14 @@ public class EndpointEvaluator {
         }
 
         this.requestConfig = builder.build();
+        this.httpClient = HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).setDefaultCredentialsProvider(credentialsProvider).build();
     }
 
     public void evaluate() {
         ThreadContext.put(SERVICE_TC_IDENTIFIER, config.getName());
         ThreadContext.put(ENVIRONMENT_TC_IDENTIFIER, config.getEnvironment());
         logger.log(Level.INFO, "Evaluating health...");
-        try (CloseableHttpClient client = HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).setDefaultCredentialsProvider(credentialsProvider).build()) {
-            HttpResponse response = client.execute(new HttpGet(config.getUrl()), context);
+        try (CloseableHttpResponse response = httpClient.execute(new HttpGet(config.getUrl()), context)) {
             int statusCode = response.getStatusLine().getStatusCode();
             logger.log(Level.DEBUG, "Received status code {}", statusCode);
             HttpEntity entity = response.getEntity();

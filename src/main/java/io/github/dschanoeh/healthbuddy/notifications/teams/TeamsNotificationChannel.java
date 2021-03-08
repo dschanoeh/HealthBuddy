@@ -9,12 +9,12 @@ import io.github.dschanoeh.healthbuddy.ServiceMonitor;
 import io.github.dschanoeh.healthbuddy.notifications.NotificationChannel;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
@@ -26,6 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.time.Duration;
 import java.time.format.DateTimeFormatter;
 
@@ -38,6 +39,7 @@ public class TeamsNotificationChannel implements NotificationChannel {
     ObjectMapper mapper = new ObjectMapper();
     private final NetworkConfig networkConfig;
     CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+    private final CloseableHttpClient httpClient;
 
     public TeamsNotificationChannel(TeamsConfiguration configuration, NetworkConfig networkConfig) {
         this.networkConfig = networkConfig;
@@ -57,6 +59,7 @@ public class TeamsNotificationChannel implements NotificationChannel {
                     new UsernamePasswordCredentials(auth.getUser(), auth.getPassword()));
         }
         requestConfig = builder.build();
+        this.httpClient = HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).setDefaultCredentialsProvider(credentialsProvider).build();
     }
     @Override
     public void openIncident(Incident i) {
@@ -142,24 +145,28 @@ public class TeamsNotificationChannel implements NotificationChannel {
         }
         logger.log(Level.INFO, "Message: {}", messageString);
 
-        try (CloseableHttpClient client = HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).setDefaultCredentialsProvider(credentialsProvider).build()) {
-            HttpPost httpPost = new HttpPost(configuration.getWebHookURL().toString());
-            httpPost.setHeader("Content-type", "application/json");
+        HttpPost httpPost = new HttpPost(configuration.getWebHookURL().toString());
+        httpPost.setHeader("Content-type", "application/json");
+        try {
             StringEntity entity = new StringEntity(messageString);
             httpPost.setEntity(entity);
-            HttpResponse response = client.execute(httpPost);
-            int statusCode = response.getStatusLine().getStatusCode();
-            logger.log(Level.DEBUG, "Received status code {}", statusCode);
 
-            if(statusCode != 200) {
-                HttpEntity responseEntity = response.getEntity();
-                String body = EntityUtils.toString(responseEntity);
-                logger.log(Level.ERROR, "Failed to Post to webhook. Response: {}", body);
+            try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
+                int statusCode = response.getStatusLine().getStatusCode();
+                logger.log(Level.DEBUG, "Received status code {}", statusCode);
+
+                if (statusCode != 200) {
+                    HttpEntity responseEntity = response.getEntity();
+                    String body = EntityUtils.toString(responseEntity);
+                    logger.log(Level.ERROR, "Failed to Post to webhook. Response: {}", body);
+                }
+            } catch (ClientProtocolException e) {
+                logger.log(Level.ERROR, "Failed to Post to webhook: ", e);
+            } catch (IOException e) {
+                logger.log(Level.ERROR, "Failed to Connect to webhook: ", e);
             }
-        } catch (ClientProtocolException e) {
-            logger.log(Level.ERROR, "Failed to Post to webhook: ", e);
-        } catch (IOException e) {
-            logger.log(Level.ERROR, "Failed to Connect to webhook: ", e);
+        } catch (UnsupportedEncodingException ex) {
+            logger.log(Level.ERROR, "Encoding not supported: ", ex);
         }
     }
 }

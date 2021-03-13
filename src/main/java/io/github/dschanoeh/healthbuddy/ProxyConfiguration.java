@@ -10,6 +10,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ProxyConfiguration {
     private static final Logger logger = LogManager.getLogger(ProxyConfiguration.class);
@@ -36,6 +38,9 @@ public class ProxyConfiguration {
     @Getter
     @Setter
     private Authentication httpsAuthentication;
+    @Getter
+    @Setter
+    private List<String> nonProxyHosts;
 
     public static ProxyConfiguration fromNetworkConfig(NetworkConfig networkConfig) {
         ProxyConfiguration c = new ProxyConfiguration();
@@ -52,11 +57,25 @@ public class ProxyConfiguration {
 
         String httpProxy = System.getenv("HTTP_PROXY");
         String httpsProxy = System.getenv("HTTPS_PROXY");
+        String httpNonProxyHosts = System.getenv("NO_PROXY");
 
         c.setHttpProxy(proxyUrlToHost(httpProxy));
         c.setHttpsProxy(proxyUrlToHost(httpsProxy));
         c.setHttpAuthentication(proxyUrlToAuthentication(httpProxy));
         c.setHttpsAuthentication(proxyUrlToAuthentication(httpsProxy));
+
+        if(httpNonProxyHosts != null) {
+            logger.log(Level.DEBUG, "Configuring non proxy hosts...");
+            ArrayList<String> hosts = new ArrayList<String>();
+            String[] substrings = httpNonProxyHosts.split(",");
+            for(String s : substrings) {
+                if(s.startsWith("*")) {
+                    s = s.substring(1);
+                }
+                hosts.add(s);
+            }
+            c.setNonProxyHosts(hosts);
+        }
         return c;
     }
 
@@ -72,6 +91,8 @@ public class ProxyConfiguration {
         String httpsPort = System.getProperty("https.proxyPort");
         String httpsUser = System.getProperty("https.proxyUser");
         String httpsPassword = System.getProperty("https.proxyPassword");
+
+        String httpNonProxyHosts = System.getProperty("http.nonProxyHosts");
 
         if(httpHost != null && httpPort != null) {
             logger.log(Level.DEBUG, "Configuring http proxy...");
@@ -91,6 +112,19 @@ public class ProxyConfiguration {
                 logger.log(Level.DEBUG, "With authentication...");
                 c.setHttpsAuthentication(new Authentication(httpsUser, httpsPassword));
             }
+        }
+
+        if(httpNonProxyHosts != null) {
+            logger.log(Level.DEBUG, "Configuring non proxy hosts...");
+            ArrayList<String> hosts = new ArrayList<String>();
+            String[] substrings = httpNonProxyHosts.split("\\|");
+            for(String s : substrings) {
+                if(s.startsWith("*")) {
+                    s = s.substring(1);
+                }
+                hosts.add(s);
+            }
+            c.setNonProxyHosts(hosts);
         }
         return c;
     }
@@ -132,6 +166,14 @@ public class ProxyConfiguration {
     }
 
     public HttpHost getProxyForURL(URL url) {
+        if(nonProxyHosts != null) {
+            for(String host : nonProxyHosts) {
+                if(url.getHost().endsWith(host)) {
+                    logger.log(Level.DEBUG, "Not configuring a proxy for url {}", url.toString());
+                    return null;
+                }
+            }
+        }
         switch (url.getProtocol()) {
             case "http":
                 HttpHost proxy = this.getHttpProxy();

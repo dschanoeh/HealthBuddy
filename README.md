@@ -46,6 +46,8 @@ teams:
 network:
   httpProxyHost: 127.0.0.1
   httpProxyPort: 8080
+  nonProxyHosts:
+    - my-domain.com
   timeout: 5000
 ```
 
@@ -76,5 +78,5 @@ A proxy can be provided through any of the following means which take precedence
 shown here:
 1. Through the network section of the configuration file
 2. Through Java system properties(`http.proxyHost`, `https.proxyHost` and corresponding 
-   port, user and Password variables)
-3. Through the environment variables HTTP_PROXY and HTTPS_PROXY
+   port, user and Password variables as well as `http.nonProxyHosts`)
+3. Through the environment variables HTTP_PROXY, HTTPS_PROXY and NO_PROXY

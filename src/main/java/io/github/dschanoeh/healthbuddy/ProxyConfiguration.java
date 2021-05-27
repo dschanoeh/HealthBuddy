@@ -66,7 +66,7 @@ public class ProxyConfiguration {
 
         if(httpNonProxyHosts != null) {
             logger.log(Level.DEBUG, "Configuring non proxy hosts...");
-            ArrayList<String> hosts = new ArrayList<String>();
+            ArrayList<String> hosts = new ArrayList<>();
             String[] substrings = httpNonProxyHosts.split(",");
             for(String s : substrings) {
                 if(s.startsWith("*")) {
@@ -135,8 +135,7 @@ public class ProxyConfiguration {
         }
         try {
             URL url = new URL(proxyUrl);
-            HttpHost proxy = new HttpHost(url.getHost(), url.getPort(), url.getProtocol());
-            return proxy;
+            return new HttpHost(url.getHost(), url.getPort(), url.getProtocol());
         } catch (MalformedURLException e) {
             logger.log(Level.ERROR, "Proxy URL is malformed: ", e);
             return null;
@@ -153,8 +152,7 @@ public class ProxyConfiguration {
             if(userInfo.contains(":")) {
                 String user = userInfo.substring(0, userInfo.indexOf(':'));
                 String password = userInfo.substring(userInfo.indexOf(':') + 1);
-                Authentication a = new Authentication(user, password);
-                return a;
+                return new Authentication(user, password);
             } else {
                 logger.log(Level.WARN, "Proxy user info must include user and password");
                 return null;
@@ -169,7 +167,7 @@ public class ProxyConfiguration {
         if(nonProxyHosts != null) {
             for(String host : nonProxyHosts) {
                 if(url.getHost().endsWith(host)) {
-                    logger.log(Level.DEBUG, "Not configuring a proxy for url {}", url.toString());
+                    logger.log(Level.DEBUG, "Not configuring a proxy for url {}", url);
                     return null;
                 }
             }
@@ -178,22 +176,23 @@ public class ProxyConfiguration {
             case "http":
                 HttpHost proxy = this.getHttpProxy();
                 if(proxy != null) {
-                    logger.log(Level.DEBUG, "Configuring proxy {} for url {}", proxy.toString(), url.toString());
+                    logger.log(Level.DEBUG, "Configuring proxy {} for url {}", proxy, url);
                 } else {
-                    logger.log(Level.DEBUG, "Not configuring a proxy for url {}", url.toString());
+                    logger.log(Level.DEBUG, "Not configuring a proxy for url {}", url);
                 }
                 return proxy;
             case "https":
                 HttpHost proxy2 = this.getHttpsProxy();
                 if(proxy2 != null) {
-                    logger.log(Level.DEBUG, "Configuring proxy {} for url {}", proxy2.toString(), url.toString());
+                    logger.log(Level.DEBUG, "Configuring proxy {} for url {}", proxy2, url);
                 } else {
-                    logger.log(Level.DEBUG, "Not configuring a proxy for url {}", url.toString());
+                    logger.log(Level.DEBUG, "Not configuring a proxy for url {}", url);
                 }
                 return proxy2;
+            default:
+                logger.log(Level.ERROR, "Invalid protocol in URL '{}'. Must be either http or https", url);
+                return null;
         }
-        logger.log(Level.ERROR, "URL has unknown scheme: {}", url);
-        return null;
     }
 
     public Authentication getAuthenticationForURL(URL url) {
@@ -201,21 +200,22 @@ public class ProxyConfiguration {
             case "http":
                 Authentication auth = this.getHttpAuthentication();
                 if(auth != null) {
-                    logger.log(Level.DEBUG, "Using proxy authentication for url {}", url.toString());
+                    logger.log(Level.DEBUG, "Using proxy authentication for url {}", url);
                 } else {
-                    logger.log(Level.DEBUG, "Using no proxy authentication for url {}", url.toString());
+                    logger.log(Level.DEBUG, "Using no proxy authentication for url {}", url);
                 }
                 return auth;
             case "https":
                 Authentication auth2 = this.getHttpsAuthentication();
                 if(auth2 != null) {
-                    logger.log(Level.DEBUG, "Using proxy authentication for url {}", url.toString());
+                    logger.log(Level.DEBUG, "Using proxy authentication for url {}", url);
                 } else {
-                    logger.log(Level.DEBUG, "Using no proxy authentication for url {}", url.toString());
+                    logger.log(Level.DEBUG, "Using no proxy authentication for url {}", url);
                 }
                 return auth2;
+            default:
+                logger.log(Level.ERROR, "URL has unknown scheme: {}", url);
+                return null;
         }
-        logger.log(Level.ERROR, "URL has unknown scheme: {}", url);
-        return null;
     }
 }

@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.net.MalformedURLException;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Component
 public class ServiceMonitor{
@@ -33,7 +32,6 @@ public class ServiceMonitor{
     public void startMonitoring() {
         logger.log(Level.DEBUG, "Setting up evaluators");
         NotificationChannel channel = new TeamsNotificationChannel(config.getTeams(), config.getNetwork());
-        Date d = new Date();
         LocalDateTime firstExecution = LocalDateTime.now();
         firstExecution = firstExecution.plusNanos(EVALUATION_SPREAD_MS*1000*1000);
         for(ServiceConfig c : config.getServices()) {

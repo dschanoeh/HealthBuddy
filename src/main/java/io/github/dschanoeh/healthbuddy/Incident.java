@@ -7,20 +7,20 @@ import lombok.Setter;
 import java.time.ZonedDateTime;
 
 public class Incident {
-    public static enum Type {UNEXPECTED_RESPONSE, NOT_REACHABLE};
-    public static enum State { ACTIVE, RESOLVED }
+    public enum Type {UNEXPECTED_RESPONSE, NOT_REACHABLE}
+    public enum State { ACTIVE, RESOLVED }
 
     @Getter
     private ZonedDateTime startDate;
     @Getter
     private ZonedDateTime endDate;
     @Getter
-    private Type type;
+    private final Type type;
     private State state;
     @Getter
     @Setter
     private String serviceName;
-    private NotificationChannel channel;
+    private final NotificationChannel channel;
     @Getter
     @Setter
     private String body;

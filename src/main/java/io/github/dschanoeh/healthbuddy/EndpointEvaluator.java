@@ -30,11 +30,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public class EndpointEvaluator {
-    private static final Logger logger = LogManager.getLogger(ServiceMonitor.class);
+    private static final Logger logger = LogManager.getLogger(EndpointEvaluator.class);
     private static final String SERVICE_TC_IDENTIFIER = "service";
     private static final String ENVIRONMENT_TC_IDENTIFIER = "environment";
 
-    private RequestConfig requestConfig;
     private final ServiceConfig config;
     private Incident currentIncident;
     private final NotificationChannel channel;
@@ -60,11 +59,11 @@ public class EndpointEvaluator {
             HttpHost proxy = proxyConfiguration.getProxyForURL(url);
             if(proxy != null) {
                 builder.setProxy(proxy);
-            }
-            ProxyConfiguration.Authentication auth = proxyConfiguration.getAuthenticationForURL(url);
-            if (auth != null) {
-                credentialsProvider.setCredentials(new AuthScope(proxy.getHostName(), proxy.getPort()),
-                        new UsernamePasswordCredentials(auth.getUser(), auth.getPassword()));
+                ProxyConfiguration.Authentication auth = proxyConfiguration.getAuthenticationForURL(url);
+                if (auth != null) {
+                    credentialsProvider.setCredentials(new AuthScope(proxy.getHostName(), proxy.getPort()),
+                            new UsernamePasswordCredentials(auth.getUser(), auth.getPassword()));
+                }
             }
             if(networkConfig.getTimeout() != null) {
                 builder.setConnectTimeout(networkConfig.getTimeout());
@@ -86,7 +85,7 @@ public class EndpointEvaluator {
             context.setAuthCache(cache);
         }
 
-        this.requestConfig = builder.build();
+        RequestConfig requestConfig = builder.build();
         this.httpClient = HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).setDefaultCredentialsProvider(credentialsProvider).build();
     }
 
@@ -108,11 +107,9 @@ public class EndpointEvaluator {
             Boolean validBody = true;
 
             // Optionally validate status code
-            if(config.getAllowedStatusCodes() != null) {
-                if (!config.getAllowedStatusCodes().contains(statusCode)) {
-                    validStatus = false;
-                    logger.log(Level.WARN, "Status code not matching allowed status codes");
-                }
+            if(config.getAllowedStatusCodes() != null && !config.getAllowedStatusCodes().contains(statusCode)) {
+                validStatus = false;
+                logger.log(Level.WARN, "Status code not matching allowed status codes");
             }
 
             // Optionally validate actuator status

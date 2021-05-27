@@ -31,18 +31,16 @@ import java.time.Duration;
 import java.time.format.DateTimeFormatter;
 
 public class TeamsNotificationChannel implements NotificationChannel {
-    private static final Logger logger = LogManager.getLogger(ServiceMonitor.class);
+    private static final Logger logger = LogManager.getLogger(TeamsNotificationChannel.class);
     private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd - HH:mm:ss z");
 
     TeamsConfiguration configuration;
     RequestConfig requestConfig;
     ObjectMapper mapper = new ObjectMapper();
-    private final NetworkConfig networkConfig;
     CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
     private final CloseableHttpClient httpClient;
 
     public TeamsNotificationChannel(TeamsConfiguration configuration, NetworkConfig networkConfig) {
-        this.networkConfig = networkConfig;
         logger.log(Level.INFO, "TeamsNotificationChannel created");
         this.configuration = configuration;
 
@@ -52,11 +50,11 @@ public class TeamsNotificationChannel implements NotificationChannel {
         HttpHost proxy = proxyConfiguration.getProxyForURL(configuration.getWebHookURL());
         if(proxy != null) {
             builder.setProxy(proxy);
-        }
-        ProxyConfiguration.Authentication auth = proxyConfiguration.getAuthenticationForURL(configuration.getWebHookURL());
-        if (auth != null) {
-            credentialsProvider.setCredentials(new AuthScope(proxy.getHostName(), proxy.getPort()),
-                    new UsernamePasswordCredentials(auth.getUser(), auth.getPassword()));
+            ProxyConfiguration.Authentication auth = proxyConfiguration.getAuthenticationForURL(configuration.getWebHookURL());
+            if (auth != null) {
+                credentialsProvider.setCredentials(new AuthScope(proxy.getHostName(), proxy.getPort()),
+                        new UsernamePasswordCredentials(auth.getUser(), auth.getPassword()));
+            }
         }
         requestConfig = builder.build();
         this.httpClient = HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).setDefaultCredentialsProvider(credentialsProvider).build();

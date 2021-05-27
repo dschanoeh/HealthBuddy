@@ -29,7 +29,7 @@ public class TeamsMessageSection {
     private String activityImage;
     @Getter
     @Setter
-    private List<Fact> facts = new ArrayList<Fact>();
+    private List<Fact> facts = new ArrayList<>();
     @JsonProperty("markdown")
     private final Boolean markdown = true;
 }

@@ -14,8 +14,7 @@ public class TeamsConfiguration {
 
     public java.net.URL getWebHookURL() {
         try {
-            java.net.URL url = new java.net.URL(webHookURL);
-            return url;
+            return new java.net.URL(webHookURL);
         } catch (MalformedURLException e) {
             return null;
         }

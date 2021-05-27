@@ -23,7 +23,7 @@ public class TeamsMessage {
     private String themeColor;
     @Getter
     @Setter
-    private List<TeamsMessageSection> sections = new ArrayList<TeamsMessageSection>();
+    private List<TeamsMessageSection> sections = new ArrayList<>();
 
     @JsonProperty("@context")
     private final String context = "https://schema.org/extensions";

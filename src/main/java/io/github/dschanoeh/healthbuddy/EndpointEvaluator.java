@@ -53,6 +53,7 @@ public class EndpointEvaluator {
     private void setupRequestConfig() throws MalformedURLException {
         URL url = new URL(config.getUrl());
         RequestConfig.Builder builder = RequestConfig.custom();
+        HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
 
         if(networkConfig != null) {
             ProxyConfiguration proxyConfiguration = networkConfig.getProxyConfiguration();
@@ -67,6 +68,9 @@ public class EndpointEvaluator {
             }
             if(networkConfig.getTimeout() != null) {
                 builder.setConnectTimeout(networkConfig.getTimeout());
+            }
+            if(!networkConfig.getFollowRedirects()) {
+                httpClientBuilder.disableRedirectHandling();
             }
         }
 
@@ -86,13 +90,9 @@ public class EndpointEvaluator {
         }
 
         RequestConfig requestConfig = builder.build();
-        HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+
         httpClientBuilder.setDefaultRequestConfig(requestConfig);
         httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
-
-        if(!networkConfig.getFollowRedirects()) {
-            httpClientBuilder.disableRedirectHandling();
-        }
 
         this.httpClient = httpClientBuilder.build();
     }

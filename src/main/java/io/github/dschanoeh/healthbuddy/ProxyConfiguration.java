@@ -15,6 +15,8 @@ import java.util.List;
 
 public class ProxyConfiguration {
     private static final Logger logger = LogManager.getLogger(ProxyConfiguration.class);
+    private static final String CONFIGURING_PROXY_PATTERN = "Configuring proxy {} for url {}";
+    private static final String NOT_CONFIGURING_PROXY_PATTERN = "Not configuring a proxy for url {}";
 
     @AllArgsConstructor
     public static class Authentication {
@@ -116,7 +118,7 @@ public class ProxyConfiguration {
 
         if(httpNonProxyHosts != null) {
             logger.log(Level.DEBUG, "Configuring non proxy hosts...");
-            ArrayList<String> hosts = new ArrayList<String>();
+            ArrayList<String> hosts = new ArrayList<>();
             String[] substrings = httpNonProxyHosts.split("\\|");
             for(String s : substrings) {
                 if(s.startsWith("*")) {
@@ -167,7 +169,7 @@ public class ProxyConfiguration {
         if(nonProxyHosts != null) {
             for(String host : nonProxyHosts) {
                 if(url.getHost().endsWith(host)) {
-                    logger.log(Level.DEBUG, "Not configuring a proxy for url {}", url);
+                    logger.log(Level.DEBUG, NOT_CONFIGURING_PROXY_PATTERN, url);
                     return null;
                 }
             }
@@ -176,17 +178,17 @@ public class ProxyConfiguration {
             case "http":
                 HttpHost proxy = this.getHttpProxy();
                 if(proxy != null) {
-                    logger.log(Level.DEBUG, "Configuring proxy {} for url {}", proxy, url);
+                    logger.log(Level.DEBUG, CONFIGURING_PROXY_PATTERN, proxy, url);
                 } else {
-                    logger.log(Level.DEBUG, "Not configuring a proxy for url {}", url);
+                    logger.log(Level.DEBUG, NOT_CONFIGURING_PROXY_PATTERN, url);
                 }
                 return proxy;
             case "https":
                 HttpHost proxy2 = this.getHttpsProxy();
                 if(proxy2 != null) {
-                    logger.log(Level.DEBUG, "Configuring proxy {} for url {}", proxy2, url);
+                    logger.log(Level.DEBUG, CONFIGURING_PROXY_PATTERN, proxy2, url);
                 } else {
-                    logger.log(Level.DEBUG, "Not configuring a proxy for url {}", url);
+                    logger.log(Level.DEBUG, NOT_CONFIGURING_PROXY_PATTERN, url);
                 }
                 return proxy2;
             default:

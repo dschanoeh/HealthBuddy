@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.dschanoeh.healthbuddy.Incident;
 import io.github.dschanoeh.healthbuddy.NetworkConfig;
 import io.github.dschanoeh.healthbuddy.ProxyConfiguration;
-import io.github.dschanoeh.healthbuddy.ServiceMonitor;
 import io.github.dschanoeh.healthbuddy.notifications.NotificationChannel;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;

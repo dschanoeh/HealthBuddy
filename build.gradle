@@ -50,6 +50,18 @@ dependencies {
 	testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.7.2")
 }
 
+jacocoTestReport {
+	dependsOn test
+}
+
 test {
 	useJUnitPlatform()
+	finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+	reports {
+		xml.enabled = true
+		html.enabled = true
+	}
 }

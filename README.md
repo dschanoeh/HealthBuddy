@@ -49,6 +49,7 @@ network:
   nonProxyHosts:
     - my-domain.com
   timeout: 5000
+  followRedirects: false
 ```
 
 ### Service Configuration

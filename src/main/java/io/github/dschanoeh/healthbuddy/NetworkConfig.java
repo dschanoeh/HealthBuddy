@@ -18,6 +18,9 @@ public class NetworkConfig {
     @Getter
     @Setter
     private Integer timeout = 5000;
+    @Getter
+    @Setter
+    private Boolean followRedirects = false;
 
     public ProxyConfiguration getProxyConfiguration() {
         if(httpProxyHost != null && httpProxyPort != null) {

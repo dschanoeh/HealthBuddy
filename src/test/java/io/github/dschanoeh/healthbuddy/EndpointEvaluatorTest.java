@@ -29,6 +29,7 @@ public class EndpointEvaluatorTest {
     private static final String INVALID_URL = "http://127.0.0.1:1234";
     private static final String SAMPLE_HEALTHY_SERVICE = "http://www.my-service.com";
     private static final String SAMPLE_HEALTH_PATH = "/health";
+    private static final String SAMPLE_SUCCESS_PATH = "/success";
     private static final String NO_CONTENT_PATH = "/noContent";
     private static final String SAMPLE_DEGRADED_SERVICE = "http://www.my-degraded-service.com";
     private static final String SAMPLE_SERVICE_NAME = "Foo service";
@@ -115,7 +116,7 @@ public class EndpointEvaluatorTest {
         hoverfly.simulate(dsl(service(SAMPLE_HEALTHY_SERVICE).get(SAMPLE_HEALTH_PATH).willReturn(success().body(
                 jsonWithSingleQuotes("{'status':'UP'}")))));
         ServiceConfig config = new ServiceConfig();
-        config.setUrl(SAMPLE_HEALTHY_SERVICE +SAMPLE_HEALTH_PATH);
+        config.setUrl(SAMPLE_HEALTHY_SERVICE + SAMPLE_HEALTH_PATH);
         config.setName(SAMPLE_SERVICE_NAME);
         config.setAllowedStatusCodes(Arrays.asList(200));
         config.setAllowedActuatorStatus(Arrays.asList("UP"));
@@ -129,7 +130,7 @@ public class EndpointEvaluatorTest {
         hoverfly.simulate(dsl(service(SAMPLE_HEALTHY_SERVICE).get(SAMPLE_HEALTH_PATH).willReturn(success().body(
                 jsonWithSingleQuotes("{'status':'UNKNOWN','details':{'foo':'bar'}}")))));
         ServiceConfig config = new ServiceConfig();
-        config.setUrl(SAMPLE_HEALTHY_SERVICE +SAMPLE_HEALTH_PATH);
+        config.setUrl(SAMPLE_HEALTHY_SERVICE + SAMPLE_HEALTH_PATH);
         config.setName(SAMPLE_SERVICE_NAME);
         config.setAllowedStatusCodes(Arrays.asList(200));
         config.setAllowedActuatorStatus(Arrays.asList("UP"));
@@ -143,7 +144,7 @@ public class EndpointEvaluatorTest {
         hoverfly.simulate(dsl(service(SAMPLE_HEALTHY_SERVICE).get(SAMPLE_HEALTH_PATH).willReturn(success().body(
                 jsonWithSingleQuotes("")))));
         ServiceConfig config = new ServiceConfig();
-        config.setUrl(SAMPLE_HEALTHY_SERVICE +SAMPLE_HEALTH_PATH);
+        config.setUrl(SAMPLE_HEALTHY_SERVICE + SAMPLE_HEALTH_PATH);
         config.setName(SAMPLE_SERVICE_NAME);
         config.setAllowedStatusCodes(Arrays.asList(200));
         config.setAllowedActuatorStatus(Arrays.asList("UP"));
@@ -157,10 +158,48 @@ public class EndpointEvaluatorTest {
         hoverfly.simulate(dsl(service(SAMPLE_HEALTHY_SERVICE).get(SAMPLE_HEALTH_PATH).willReturn(serverError().body(
                 jsonWithSingleQuotes("{'status':'UP'}")))));
         ServiceConfig config = new ServiceConfig();
-        config.setUrl(SAMPLE_HEALTHY_SERVICE +SAMPLE_HEALTH_PATH);
+        config.setUrl(SAMPLE_HEALTHY_SERVICE + SAMPLE_HEALTH_PATH);
         config.setName(SAMPLE_SERVICE_NAME);
         config.setAllowedActuatorStatus(Arrays.asList("UP"));
         EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channel);
+        evaluator.evaluate();
+        verify(channel, never()).openIncident(any());
+    }
+
+    @Test
+    public void redirectFollowingDisabledTest(Hoverfly hoverfly) throws MalformedURLException {
+        hoverfly.simulate(dsl(service(SAMPLE_HEALTHY_SERVICE)
+                .get(SAMPLE_HEALTH_PATH).willReturn(success().status(301).header("Location", SAMPLE_HEALTHY_SERVICE+SAMPLE_SUCCESS_PATH))
+                .get(SAMPLE_SUCCESS_PATH).willReturn(success())
+        ));
+        ServiceConfig config = new ServiceConfig();
+        config.setUrl(SAMPLE_HEALTHY_SERVICE + SAMPLE_HEALTH_PATH);
+        config.setName(SAMPLE_SERVICE_NAME);
+        config.setAllowedStatusCodes(Arrays.asList(200));
+        NetworkConfig customNetworkConfig = new NetworkConfig();
+        customNetworkConfig.setHttpProxyHost(networkConfig.getHttpProxyHost());
+        customNetworkConfig.setHttpProxyPort(networkConfig.getHttpProxyPort());
+        customNetworkConfig.setFollowRedirects(false);
+        EndpointEvaluator evaluator = new EndpointEvaluator(config, customNetworkConfig, channel);
+        evaluator.evaluate();
+        verify(channel, only()).openIncident(any());
+    }
+
+    @Test
+    public void redirectFollowingEnabledTest(Hoverfly hoverfly) throws MalformedURLException {
+        hoverfly.simulate(dsl(service(SAMPLE_HEALTHY_SERVICE)
+                .get(SAMPLE_HEALTH_PATH).willReturn(success().status(301).header("Location", SAMPLE_HEALTHY_SERVICE+SAMPLE_SUCCESS_PATH))
+                .get(SAMPLE_SUCCESS_PATH).willReturn(success())
+        ));
+        ServiceConfig config = new ServiceConfig();
+        config.setUrl(SAMPLE_HEALTHY_SERVICE + SAMPLE_HEALTH_PATH);
+        config.setName(SAMPLE_SERVICE_NAME);
+        config.setAllowedStatusCodes(Arrays.asList(200));
+        NetworkConfig customNetworkConfig = new NetworkConfig();
+        customNetworkConfig.setHttpProxyHost(networkConfig.getHttpProxyHost());
+        customNetworkConfig.setHttpProxyPort(networkConfig.getHttpProxyPort());
+        customNetworkConfig.setFollowRedirects(true);
+        EndpointEvaluator evaluator = new EndpointEvaluator(config, customNetworkConfig, channel);
         evaluator.evaluate();
         verify(channel, never()).openIncident(any());
     }

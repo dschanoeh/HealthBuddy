@@ -86,7 +86,15 @@ public class EndpointEvaluator {
         }
 
         RequestConfig requestConfig = builder.build();
-        this.httpClient = HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).setDefaultCredentialsProvider(credentialsProvider).build();
+        HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+        httpClientBuilder.setDefaultRequestConfig(requestConfig);
+        httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+
+        if(!networkConfig.getFollowRedirects()) {
+            httpClientBuilder.disableRedirectHandling();
+        }
+
+        this.httpClient = httpClientBuilder.build();
     }
 
     public void evaluate() {

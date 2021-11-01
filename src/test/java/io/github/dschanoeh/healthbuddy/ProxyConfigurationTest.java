@@ -8,32 +8,35 @@ import org.junit.jupiter.api.Test;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class ProxyConfigurationTest {
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+class ProxyConfigurationTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         System.setProperty("http.nonProxyHosts", "*foo.bar|*bar.baz");
         System.setProperty("http.proxyHost", "127.0.0.1");
         System.setProperty("http.proxyPort", "8080");
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         System.clearProperty("http.nonProxyHosts");
         System.clearProperty("http.proxyHost");
         System.clearProperty("http.proxyPort");
     }
 
     @Test
-    public void noProxyTest() throws MalformedURLException {
+    void noProxyTest() throws MalformedURLException {
         ProxyConfiguration c = ProxyConfiguration.fromProperties();
         HttpHost proxyForURL = c.getProxyForURL(new URL("http://bla.foo.bar"));
-        assert proxyForURL == null;
+        assertNull(proxyForURL);
 
         proxyForURL = c.getProxyForURL(new URL("http://bla.foo2.bar"));
-        assert proxyForURL != null;
+        assertNotNull(proxyForURL);
 
         proxyForURL = c.getProxyForURL(new URL("http://foo.bar"));
-        assert proxyForURL == null;
+        assertNull(proxyForURL);
     }
 }

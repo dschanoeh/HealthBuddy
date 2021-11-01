@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.time.Duration;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class TeamsNotificationChannel implements NotificationChannel {
     private static final Logger logger = LogManager.getLogger(TeamsNotificationChannel.class);
@@ -67,38 +68,38 @@ public class TeamsNotificationChannel implements NotificationChannel {
         message.setSummary(String.format("A new incident for the service '%s' was opened", i.getServiceName()));
         TeamsMessageSection section = new TeamsMessageSection();
         message.getSections().add(section);
-
+        List<TeamsMessageSection.Fact> facts = section.getFacts();
         switch(i.getType()) {
             case UNEXPECTED_RESPONSE:
                 section.setActivityTitle("Unexpected response from observed endpoint");
-                section.getFacts().add(new TeamsMessageSection.Fact("Service", i.getServiceName()));
+                facts.add(new TeamsMessageSection.Fact("Service", i.getServiceName()));
                 if(i.getEnvironment() != null) {
-                    section.getFacts().add(new TeamsMessageSection.Fact("Environment", i.getEnvironment()));
+                    facts.add(new TeamsMessageSection.Fact("Environment", i.getEnvironment()));
                 }
                 if(i.getBody() != null) {
-                    section.getFacts().add(new TeamsMessageSection.Fact("Response", i.getBody()));
+                    facts.add(new TeamsMessageSection.Fact("Response", i.getBody()));
                 }
                 if(i.getHttpStatus() != null) {
-                    section.getFacts().add(new TeamsMessageSection.Fact("Status Code", String.valueOf(i.getHttpStatus())));
+                    facts.add(new TeamsMessageSection.Fact("Status Code", String.valueOf(i.getHttpStatus())));
                 }
                 if(i.getUrl() != null) {
-                    section.getFacts().add(new TeamsMessageSection.Fact("URL", i.getUrl()));
+                    facts.add(new TeamsMessageSection.Fact("URL", i.getUrl()));
                 }
                 if(i.getStartDate() != null) {
-                    section.getFacts().add(new TeamsMessageSection.Fact("Start Date", dateTimeFormatter.format(i.getStartDate())));
+                    facts.add(new TeamsMessageSection.Fact("Start Date", dateTimeFormatter.format(i.getStartDate())));
                 }
                 break;
             case NOT_REACHABLE:
                 section.setActivityTitle("The observed endpoint is not reachable");
-                section.getFacts().add(new TeamsMessageSection.Fact("Service", i.getServiceName()));
+                facts.add(new TeamsMessageSection.Fact("Service", i.getServiceName()));
                 if(i.getEnvironment() != null) {
-                    section.getFacts().add(new TeamsMessageSection.Fact("Environment", i.getEnvironment()));
+                    facts.add(new TeamsMessageSection.Fact("Environment", i.getEnvironment()));
                 }
                 if(i.getUrl() != null) {
-                    section.getFacts().add(new TeamsMessageSection.Fact("URL", i.getUrl()));
+                    facts.add(new TeamsMessageSection.Fact("URL", i.getUrl()));
                 }
                 if(i.getStartDate() != null) {
-                    section.getFacts().add(new TeamsMessageSection.Fact("Start Date", dateTimeFormatter.format(i.getStartDate())));
+                    facts.add(new TeamsMessageSection.Fact("Start Date", dateTimeFormatter.format(i.getStartDate())));
                 }
                 break;
             default:
@@ -118,22 +119,22 @@ public class TeamsNotificationChannel implements NotificationChannel {
         message.setSummary(String.format("The incident for the service '%s' has been resolved", i.getServiceName()));
         TeamsMessageSection section = new TeamsMessageSection();
         message.getSections().add(section);
-
-        section.getFacts().add(new TeamsMessageSection.Fact("Service", i.getServiceName()));
+        List<TeamsMessageSection.Fact> facts = section.getFacts();
+        facts.add(new TeamsMessageSection.Fact("Service", i.getServiceName()));
         if(i.getEnvironment() != null) {
-            section.getFacts().add(new TeamsMessageSection.Fact("Environment", i.getEnvironment()));
+            facts.add(new TeamsMessageSection.Fact("Environment", i.getEnvironment()));
         }
         if(i.getStartDate() != null) {
-            section.getFacts().add(new TeamsMessageSection.Fact("Start Date", dateTimeFormatter.format(i.getStartDate())));
+            facts.add(new TeamsMessageSection.Fact("Start Date", dateTimeFormatter.format(i.getStartDate())));
         }
         if(i.getEndDate() != null) {
-            section.getFacts().add(new TeamsMessageSection.Fact("End Date", dateTimeFormatter.format(i.getEndDate())));
+            facts.add(new TeamsMessageSection.Fact("End Date", dateTimeFormatter.format(i.getEndDate())));
         }
         if(i.getEndDate() != null && i.getStartDate() != null) {
             Duration duration = Duration.between(i.getStartDate(), i.getEndDate());
             Long s = duration.getSeconds();
             String durationString = String.format("%d:%02d:%02d", s / 3600, (s % 3600) / 60, (s % 60));
-            section.getFacts().add(new TeamsMessageSection.Fact("Duration", durationString));
+            facts.add(new TeamsMessageSection.Fact("Duration", durationString));
         }
         sendMessage(message);
     }

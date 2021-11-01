@@ -81,6 +81,9 @@ public class TeamsNotificationChannel implements NotificationChannel {
                 if(i.getHttpStatus() != null) {
                     section.getFacts().add(new TeamsMessageSection.Fact("Status Code", String.valueOf(i.getHttpStatus())));
                 }
+                if(i.getUrl() != null) {
+                    section.getFacts().add(new TeamsMessageSection.Fact("URL", i.getUrl()));
+                }
                 if(i.getStartDate() != null) {
                     section.getFacts().add(new TeamsMessageSection.Fact("Start Date", dateTimeFormatter.format(i.getStartDate())));
                 }
@@ -90,6 +93,9 @@ public class TeamsNotificationChannel implements NotificationChannel {
                 section.getFacts().add(new TeamsMessageSection.Fact("Service", i.getServiceName()));
                 if(i.getEnvironment() != null) {
                     section.getFacts().add(new TeamsMessageSection.Fact("Environment", i.getEnvironment()));
+                }
+                if(i.getUrl() != null) {
+                    section.getFacts().add(new TeamsMessageSection.Fact("URL", i.getUrl()));
                 }
                 if(i.getStartDate() != null) {
                     section.getFacts().add(new TeamsMessageSection.Fact("Start Date", dateTimeFormatter.format(i.getStartDate())));

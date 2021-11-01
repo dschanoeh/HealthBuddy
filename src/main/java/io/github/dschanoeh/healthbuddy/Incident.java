@@ -30,6 +30,9 @@ public class Incident {
     @Getter
     @Setter
     private String environment;
+    @Getter
+    @Setter
+    private String url;
 
     public Incident(Type type, NotificationChannel channel) {
         this.type = type;

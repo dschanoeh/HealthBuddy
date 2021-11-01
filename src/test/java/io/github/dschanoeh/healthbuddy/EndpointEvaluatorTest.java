@@ -20,6 +20,8 @@ import static io.specto.hoverfly.junit.dsl.HoverflyDsl.service;
 import static io.specto.hoverfly.junit.dsl.HttpBodyConverter.jsonWithSingleQuotes;
 import static io.specto.hoverfly.junit.dsl.ResponseCreators.serverError;
 import static io.specto.hoverfly.junit.dsl.ResponseCreators.success;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(HoverflyExtension.class)
@@ -124,6 +126,28 @@ class EndpointEvaluatorTest {
         EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channel, SAMPLE_USER_AGENT);
         evaluator.evaluate();
         verify(channel, never()).openIncident(any());
+    }
+
+    @Test
+    void incidentDetails(Hoverfly hoverfly) throws MalformedURLException {
+        String body = jsonWithSingleQuotes("{'status':'UP','details':{'foo':'bar'}}").body();
+        hoverfly.simulate(dsl(service(SAMPLE_HEALTHY_SERVICE).get(SAMPLE_HEALTH_PATH).willReturn(serverError().body(
+                body))));
+        ServiceConfig config = new ServiceConfig();
+        config.setUrl(SAMPLE_HEALTHY_SERVICE + SAMPLE_HEALTH_PATH);
+        config.setName(SAMPLE_SERVICE_NAME);
+        config.setAllowedStatusCodes(Arrays.asList(200));
+        config.setAllowedActuatorStatus(Arrays.asList("UP"));
+        EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channel, SAMPLE_USER_AGENT);
+        evaluator.evaluate();
+        verify(channel, only()).openIncident(argThat(x -> {
+            assertEquals(500, x.getHttpStatus());
+            assertEquals(body, x.getBody());
+            assertEquals(SAMPLE_SERVICE_NAME, x.getServiceName());
+            assertEquals(SAMPLE_HEALTHY_SERVICE + SAMPLE_HEALTH_PATH, x.getUrl());
+            assertTrue(x.isOpen());
+            return true;
+        }));
     }
 
     @Test

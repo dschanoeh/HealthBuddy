@@ -137,6 +137,7 @@ public class EndpointEvaluator {
                     if(body != null) {
                         currentIncident.setBody(body);
                     }
+                    currentIncident.setUrl(config.getUrl());
                     currentIncident.setHttpStatus(statusCode);
                     currentIncident.setServiceName(config.getName());
                     currentIncident.setEnvironment(config.getEnvironment());
@@ -153,6 +154,7 @@ public class EndpointEvaluator {
                 currentIncident = new Incident(Incident.Type.NOT_REACHABLE, channel);
                 currentIncident.setServiceName(config.getName());
                 currentIncident.setEnvironment(config.getEnvironment());
+                currentIncident.setUrl(config.getUrl());
                 currentIncident.open();
             }
         } catch (IOException e) {
@@ -161,6 +163,7 @@ public class EndpointEvaluator {
                 currentIncident = new Incident(Incident.Type.NOT_REACHABLE, channel);
                 currentIncident.setServiceName(config.getName());
                 currentIncident.setEnvironment(config.getEnvironment());
+                currentIncident.setUrl(config.getUrl());
                 currentIncident.open();
             }
         }

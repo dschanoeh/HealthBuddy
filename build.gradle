@@ -50,6 +50,11 @@ dependencies {
 	testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.7.2")
 }
 
+// Necessary to get build info (including version) within the application
+springBoot {
+	buildInfo()
+}
+
 jacocoTestReport {
 	dependsOn test
 }

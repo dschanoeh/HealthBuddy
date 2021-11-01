@@ -42,11 +42,13 @@ public class EndpointEvaluator {
     private final AuthCache cache = new BasicAuthCache();
     private final HttpClientContext context = HttpClientContext.create();
     private CloseableHttpClient httpClient;
+    private final String userAgent;
 
-    public EndpointEvaluator(ServiceConfig config, NetworkConfig networkConfig, NotificationChannel channel) throws MalformedURLException {
+    public EndpointEvaluator(ServiceConfig config, NetworkConfig networkConfig, NotificationChannel channel, String userAgent) throws MalformedURLException {
         this.config = config;
         this.channel = channel;
         this.networkConfig = networkConfig;
+        this.userAgent = userAgent;
         setupRequestConfig();
     }
 
@@ -93,6 +95,7 @@ public class EndpointEvaluator {
 
         httpClientBuilder.setDefaultRequestConfig(requestConfig);
         httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+        httpClientBuilder.setUserAgent(this.userAgent);
 
         this.httpClient = httpClientBuilder.build();
     }

@@ -3,19 +3,19 @@ package io.github.dschanoeh.healthbuddy;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.URL;
-import org.springframework.lang.NonNull;
 import org.springframework.validation.annotation.Validated;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Validated
 public class ServiceConfig {
-    @NonNull
+    @NotNull
     @Getter
     @Setter
     @URL
     private String url;
-    @NonNull
+    @NotNull
     @Getter
     @Setter
     private String name;

@@ -32,20 +32,19 @@ public class TeamsNotificationChannel implements NotificationChannel {
     @Override
     public void openIncident(Incident i) {
         logger.log(Level.INFO, "Sending openIncident notification");
-        TeamsMessage message = new TeamsMessage();
-        message.setThemeColor(TeamsMessage.COLOR_RED);
-        message.setTitle("New Incident");
-        message.setSummary(String.format("A new incident for the service '%s' was opened", i.getServiceName()));
-        TeamsMessageSection section = new TeamsMessageSection();
-        message.getSections().add(section);
+
+        TeamsMessage message = createMessage(
+                i,
+                "New Incident",
+                String.format("A new incident for the service '%s' was opened", i.getServiceName()),
+                TeamsMessage.COLOR_RED
+        );
+
+        TeamsMessageSection section = message.getSections().get(0);
         List<TeamsMessageSection.Fact> facts = section.getFacts();
         switch(i.getType()) {
             case UNEXPECTED_RESPONSE:
                 section.setActivityTitle("Unexpected response from observed endpoint");
-                facts.add(new TeamsMessageSection.Fact("Service", i.getServiceName()));
-                if(i.getEnvironment() != null) {
-                    facts.add(new TeamsMessageSection.Fact("Environment", i.getEnvironment()));
-                }
                 if(i.getBody() != null) {
                     facts.add(new TeamsMessageSection.Fact("Response", i.getBody()));
                 }
@@ -55,21 +54,11 @@ public class TeamsNotificationChannel implements NotificationChannel {
                 if(i.getUrl() != null) {
                     facts.add(new TeamsMessageSection.Fact("URL", i.getUrl()));
                 }
-                if(i.getStartDate() != null) {
-                    facts.add(new TeamsMessageSection.Fact("Start Date", dateTimeFormatter.format(i.getStartDate())));
-                }
                 break;
             case NOT_REACHABLE:
                 section.setActivityTitle("The observed endpoint is not reachable");
-                facts.add(new TeamsMessageSection.Fact("Service", i.getServiceName()));
-                if(i.getEnvironment() != null) {
-                    facts.add(new TeamsMessageSection.Fact("Environment", i.getEnvironment()));
-                }
                 if(i.getUrl() != null) {
                     facts.add(new TeamsMessageSection.Fact("URL", i.getUrl()));
-                }
-                if(i.getStartDate() != null) {
-                    facts.add(new TeamsMessageSection.Fact("Start Date", dateTimeFormatter.format(i.getStartDate())));
                 }
                 break;
             default:
@@ -83,20 +72,14 @@ public class TeamsNotificationChannel implements NotificationChannel {
     @Override
     public void closeIncident(Incident i) {
         logger.log(Level.INFO, "Sending closeIncident notification");
-        TeamsMessage message = new TeamsMessage();
-        message.setThemeColor(TeamsMessage.COLOR_GREEN);
-        message.setTitle("Incident Resolved");
-        message.setSummary(String.format("The incident for the service '%s' has been resolved", i.getServiceName()));
-        TeamsMessageSection section = new TeamsMessageSection();
-        message.getSections().add(section);
-        List<TeamsMessageSection.Fact> facts = section.getFacts();
-        facts.add(new TeamsMessageSection.Fact("Service", i.getServiceName()));
-        if(i.getEnvironment() != null) {
-            facts.add(new TeamsMessageSection.Fact("Environment", i.getEnvironment()));
-        }
-        if(i.getStartDate() != null) {
-            facts.add(new TeamsMessageSection.Fact("Start Date", dateTimeFormatter.format(i.getStartDate())));
-        }
+        TeamsMessage message = createMessage(
+                i,
+                "Incident Resolved",
+                String.format("The incident for the service '%s' has been resolved", i.getServiceName()),
+                TeamsMessage.COLOR_GREEN
+        );
+
+        List<TeamsMessageSection.Fact> facts = message.getSections().get(0).getFacts();
         if(i.getEndDate() != null) {
             facts.add(new TeamsMessageSection.Fact("End Date", dateTimeFormatter.format(i.getEndDate())));
         }
@@ -109,11 +92,37 @@ public class TeamsNotificationChannel implements NotificationChannel {
         triggerHooks(i, message);
     }
 
+    private TeamsMessage createMessage(Incident i, String title, String summary, String color) {
+        TeamsMessage message = new TeamsMessage();
+        message.setThemeColor(color);
+        message.setTitle(title);
+        message.setSummary(summary);
+
+        TeamsMessageSection section = new TeamsMessageSection();
+        message.getSections().add(section);
+        List<TeamsMessageSection.Fact> facts = section.getFacts();
+        facts.add(new TeamsMessageSection.Fact("Service", i.getServiceName()));
+        if(i.getEnvironment() != null) {
+            facts.add(new TeamsMessageSection.Fact("Environment", i.getEnvironment()));
+        }
+        if(i.getStartDate() != null) {
+            facts.add(new TeamsMessageSection.Fact("Start Date", dateTimeFormatter.format(i.getStartDate())));
+        }
+
+        return message;
+    }
+
     private void triggerHooks(Incident i, TeamsMessage m) {
+        Boolean sent = false;
         for (WebHook hook : this.hooks) {
             if (hook.isResponsible(i)) {
                 hook.send(m);
+                sent = true;
             }
+        }
+
+        if (!sent) {
+            logger.log(Level.WARN, "No hook responsible for this incident for service {} was found.", i.getServiceName());
         }
     }
 }

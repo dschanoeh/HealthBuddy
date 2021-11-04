@@ -1,5 +1,5 @@
 # HealthBuddy
-
+![](images/banner.png)
 ![](https://github.com/dschanoeh/HealthBuddy/workflows/build/badge.svg)
 ![GitHub](https://img.shields.io/github/license/dschanoeh/HealthBuddy)
 [![codecov](https://codecov.io/gh/dschanoeh/HealthBuddy/branch/main/graph/badge.svg?token=AWFQL4U1A5)](https://codecov.io/gh/dschanoeh/HealthBuddy)
@@ -42,7 +42,8 @@ services:
     password: basicAuthPass
 # The Teams webhook to be called for alerts
 teams:
-  webHookURL: http://127.0.0.1/hook
+  hooks:
+    - url: http://127.0.0.1/hook
 # Optional network configuration
 network:
   httpProxyHost: 127.0.0.1
@@ -72,7 +73,23 @@ basic authentication when calling the health endpoint.
 
 In addition to the config file, it is also possible to set parameters through the environment:
 ```shell
-export TEAMS_WEBHOOKURL="http://127.0.0.1/hook"
+export TEAMS_HOOKS_0_URL="http://127.0.0.1/hook"
+```
+
+### Teams Hook Configuration
+One or more Teams hooks can be configured. At a minimum, a URL must be provided for each.
+Optionally, an environment pattern can be configured. This pattern restricts, incidents for which
+environment get sent to this hook.
+
+The following example would send messages for the production environment to the first hook and
+messages for any environment starting with test to the second hook.
+```yaml
+teams:
+  hooks:
+    - url: http://127.0.0.1/productionHook
+      environmentPattern: "^production$"
+    - url: http://127.0.0.1/testHook
+      environmentPattern: "^test"
 ```
 
 ### Proxy Configuration

@@ -43,7 +43,7 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok:1.18.22'
 	annotationProcessor 'org.projectlombok:lombok:1.18.22'
 	testCompileOnly 'org.projectlombok:lombok:1.18.22'
-	testCompile 'org.junit-pioneer:junit-pioneer:1.4.2'
+	testImplementation 'org.junit-pioneer:junit-pioneer:1.4.2'
 	testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 	testImplementation 'io.specto:hoverfly-java-junit5:0.14.1'
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.7.2")

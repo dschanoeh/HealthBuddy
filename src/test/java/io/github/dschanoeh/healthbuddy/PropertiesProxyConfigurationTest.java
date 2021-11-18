@@ -11,7 +11,7 @@ import java.net.URL;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-class ProxyConfigurationTest {
+class PropertiesProxyConfigurationTest {
 
     @BeforeEach
     void setUp() {

@@ -151,7 +151,7 @@ public class ProxyConfiguration {
         try {
             URL url = new URL(proxyUrl);
             String userInfo = url.getUserInfo();
-            if(userInfo.contains(":")) {
+            if(userInfo != null && userInfo.contains(":")) {
                 String user = userInfo.substring(0, userInfo.indexOf(':'));
                 String password = userInfo.substring(userInfo.indexOf(':') + 1);
                 return new Authentication(user, password);

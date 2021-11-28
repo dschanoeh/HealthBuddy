@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 
 public class Incident {
     public enum Type {UNEXPECTED_RESPONSE, NOT_REACHABLE}
@@ -20,7 +21,7 @@ public class Incident {
     @Getter
     @Setter
     private String serviceName;
-    private final NotificationChannel channel;
+    private final List<NotificationChannel> channels;
     @Getter
     @Setter
     private String body;
@@ -34,21 +35,25 @@ public class Incident {
     @Setter
     private String url;
 
-    public Incident(Type type, NotificationChannel channel) {
+    public Incident(Type type, List<NotificationChannel> channels) {
         this.type = type;
-        this.channel = channel;
+        this.channels = channels;
     }
 
     public void open() {
         this.startDate = ZonedDateTime.now();
         this.state = State.ACTIVE;
-        channel.openIncident(this);
+        for(NotificationChannel c : channels) {
+            c.openIncident(this);
+        }
     }
 
     public void close() {
         this.endDate = ZonedDateTime.now();
         this.state = State.RESOLVED;
-        channel.closeIncident(this);
+        for(NotificationChannel c : channels) {
+            c.closeIncident(this);
+        }
     }
 
     public Boolean isOpen() {

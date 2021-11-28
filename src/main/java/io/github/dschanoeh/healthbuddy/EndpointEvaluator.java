@@ -3,6 +3,8 @@ package io.github.dschanoeh.healthbuddy;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.dschanoeh.healthbuddy.notifications.NotificationChannel;
+import org.apache.http.Header;
+import org.apache.http.HeaderElement;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -24,10 +26,12 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
+import org.springframework.http.MediaType;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
 public class EndpointEvaluator {
     private static final Logger logger = LogManager.getLogger(EndpointEvaluator.class);
@@ -36,7 +40,7 @@ public class EndpointEvaluator {
 
     private final ServiceConfig config;
     private Incident currentIncident;
-    private final NotificationChannel channel;
+    private final List<NotificationChannel> channels;
     private final NetworkConfig networkConfig;
     private final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
     private final AuthCache cache = new BasicAuthCache();
@@ -44,9 +48,9 @@ public class EndpointEvaluator {
     private CloseableHttpClient httpClient;
     private final String userAgent;
 
-    public EndpointEvaluator(ServiceConfig config, NetworkConfig networkConfig, NotificationChannel channel, String userAgent) throws MalformedURLException {
+    public EndpointEvaluator(ServiceConfig config, NetworkConfig networkConfig, List<NotificationChannel> channels, String userAgent) throws MalformedURLException {
         this.config = config;
-        this.channel = channel;
+        this.channels = channels;
         this.networkConfig = networkConfig;
         this.userAgent = userAgent;
         setupRequestConfig();
@@ -109,8 +113,19 @@ public class EndpointEvaluator {
             logger.log(Level.DEBUG, "Received status code {}", statusCode);
             HttpEntity entity = response.getEntity();
             String body = null;
+            Boolean isJson = false;
             if(entity != null) {
                 body = EntityUtils.toString(entity);
+                final Header contentType = entity.getContentType();
+                if (contentType != null) {
+                    for (final HeaderElement element : contentType.getElements()) {
+                        if (element.getName().equalsIgnoreCase(MediaType.APPLICATION_JSON_VALUE)) {
+                            logger.log(Level.INFO, "Json response received");
+                            isJson = true;
+                            break;
+                        }
+                    }
+                }
                 logger.log(Level.DEBUG, "Received body {}", body);
             }
 
@@ -133,9 +148,13 @@ public class EndpointEvaluator {
 
             if(!(validStatus && validBody)) {
                 if(currentIncident == null || !currentIncident.isOpen()) {
-                    currentIncident = new Incident(Incident.Type.UNEXPECTED_RESPONSE, channel);
+                    currentIncident = new Incident(Incident.Type.UNEXPECTED_RESPONSE, channels);
                     if(body != null) {
-                        currentIncident.setBody(body);
+                        if(isJson) {
+                            currentIncident.setBody(prettyPrintJson(body));
+                        } else {
+                            currentIncident.setBody(body);
+                        }
                     }
                     currentIncident.setUrl(config.getUrl());
                     currentIncident.setHttpStatus(statusCode);
@@ -151,7 +170,7 @@ public class EndpointEvaluator {
         } catch (ClientProtocolException e) {
             logger.log(Level.WARN, "Received a client protocol exception");
             if(currentIncident == null || !currentIncident.isOpen()) {
-                currentIncident = new Incident(Incident.Type.NOT_REACHABLE, channel);
+                currentIncident = new Incident(Incident.Type.NOT_REACHABLE, channels);
                 currentIncident.setServiceName(config.getName());
                 currentIncident.setEnvironment(config.getEnvironment());
                 currentIncident.setUrl(config.getUrl());
@@ -160,7 +179,7 @@ public class EndpointEvaluator {
         } catch (IOException e) {
             logger.log(Level.WARN, "Could not connect to endpoint");
             if(currentIncident == null || !currentIncident.isOpen()) {
-                currentIncident = new Incident(Incident.Type.NOT_REACHABLE, channel);
+                currentIncident = new Incident(Incident.Type.NOT_REACHABLE, channels);
                 currentIncident.setServiceName(config.getName());
                 currentIncident.setEnvironment(config.getEnvironment());
                 currentIncident.setUrl(config.getUrl());
@@ -182,5 +201,19 @@ public class EndpointEvaluator {
             return false;
         }
         return true;
+    }
+
+    private String prettyPrintJson(String input) {
+        if (input == null) {
+            return null;
+        }
+
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            return mapper.readTree(input).toPrettyString();
+        } catch (JsonProcessingException e) {
+            logger.log(Level.WARN, "Failed to prettify json - returning unmodified",e);
+            return input;
+        }
     }
 }

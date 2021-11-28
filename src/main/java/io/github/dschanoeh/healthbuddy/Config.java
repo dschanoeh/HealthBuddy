@@ -1,6 +1,6 @@
 package io.github.dschanoeh.healthbuddy;
 
-import io.github.dschanoeh.healthbuddy.notifications.teams.TeamsConfiguration;
+import io.github.dschanoeh.healthbuddy.notifications.NotificationServiceConfiguration;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -26,10 +26,11 @@ public class Config {
     @Getter
     @Setter
     private List<ServiceConfig> services = new ArrayList<>();
-    @NestedConfigurationProperty
     @Getter
     @Setter
-    private TeamsConfiguration teams;
+    @NestedConfigurationProperty
+    @NotNull(message = "Notification services must be configured")
+    private NotificationServiceConfiguration notificationServices;
     @NestedConfigurationProperty
     @Getter
     @Setter

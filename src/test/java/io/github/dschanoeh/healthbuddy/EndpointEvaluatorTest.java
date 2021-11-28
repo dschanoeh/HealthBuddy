@@ -13,7 +13,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static io.specto.hoverfly.junit.core.SimulationSource.dsl;
 import static io.specto.hoverfly.junit.dsl.HoverflyDsl.service;
@@ -43,11 +45,14 @@ class EndpointEvaluatorTest {
     private static final String SAMPLE_USER_AGENT = "FooUser 0.1";
 
     private final NotificationChannel channel = mock(NotificationChannel.class);
+    private final List<NotificationChannel> channelList;
     private final NetworkConfig networkConfig = new NetworkConfig();
 
     public EndpointEvaluatorTest() {
         networkConfig.setHttpProxyHost("127.0.0.1");
         networkConfig.setHttpProxyPort(HOVERFLY_PORT);
+        channelList = new ArrayList<>();
+        channelList.add(channel);
     }
 
     @Test
@@ -58,7 +63,7 @@ class EndpointEvaluatorTest {
         NetworkConfig customNetworkConf = new NetworkConfig();
         customNetworkConf.setHttpProxyHost("127.0.0.2");
         customNetworkConf.setHttpProxyPort(80);
-        EndpointEvaluator evaluator = new EndpointEvaluator(config, customNetworkConf, channel, SAMPLE_USER_AGENT);
+        EndpointEvaluator evaluator = new EndpointEvaluator(config, customNetworkConf, channelList, SAMPLE_USER_AGENT);
         evaluator.evaluate();
         verify(channel).openIncident(any());
     }
@@ -70,7 +75,7 @@ class EndpointEvaluatorTest {
         config.setUrl(SAMPLE_HEALTHY_SERVICE +SAMPLE_HEALTH_PATH);
         config.setName(SAMPLE_SERVICE_NAME);
         config.setAllowedStatusCodes(Arrays.asList(200));
-        EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channel, SAMPLE_USER_AGENT);
+        EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channelList, SAMPLE_USER_AGENT);
         evaluator.evaluate();
         verify(channel, never()).openIncident(any());
     }
@@ -82,7 +87,7 @@ class EndpointEvaluatorTest {
         config.setUrl(SAMPLE_DEGRADED_SERVICE+SAMPLE_HEALTH_PATH);
         config.setName(SAMPLE_SERVICE_NAME);
         config.setAllowedStatusCodes(Arrays.asList(200));
-        EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channel, SAMPLE_USER_AGENT);
+        EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channelList, SAMPLE_USER_AGENT);
         evaluator.evaluate();
         verify(channel, only()).openIncident(any());
     }
@@ -94,7 +99,7 @@ class EndpointEvaluatorTest {
         config.setUrl(SAMPLE_HEALTHY_SERVICE+NO_CONTENT_PATH);
         config.setName(SAMPLE_SERVICE_NAME);
         config.setAllowedStatusCodes(Arrays.asList(200));
-        EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channel, SAMPLE_USER_AGENT);
+        EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channelList, SAMPLE_USER_AGENT);
         evaluator.evaluate();
         verify(channel, only()).openIncident(any());
     }
@@ -108,7 +113,7 @@ class EndpointEvaluatorTest {
         config.setAllowedStatusCodes(Arrays.asList(200));
         config.setUserName(SAMPLE_BASIC_AUTH_USER);
         config.setPassword(SAMPLE_BASIC_AUTH_PASS);
-        EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channel, SAMPLE_USER_AGENT);
+        EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channelList, SAMPLE_USER_AGENT);
         evaluator.evaluate();
         hoverfly.verify(service(SAMPLE_HEALTHY_SERVICE).get(SAMPLE_HEALTH_PATH).anyBody().header("Authorization", "Basic " + SAMPLE_BASIC_AUTH_BASE64));
         verify(channel, never()).openIncident(any());
@@ -123,7 +128,7 @@ class EndpointEvaluatorTest {
         config.setName(SAMPLE_SERVICE_NAME);
         config.setAllowedStatusCodes(Arrays.asList(200));
         config.setAllowedActuatorStatus(Arrays.asList("UP"));
-        EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channel, SAMPLE_USER_AGENT);
+        EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channelList, SAMPLE_USER_AGENT);
         evaluator.evaluate();
         verify(channel, never()).openIncident(any());
     }
@@ -138,7 +143,7 @@ class EndpointEvaluatorTest {
         config.setName(SAMPLE_SERVICE_NAME);
         config.setAllowedStatusCodes(Arrays.asList(200));
         config.setAllowedActuatorStatus(Arrays.asList("UP"));
-        EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channel, SAMPLE_USER_AGENT);
+        EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channelList, SAMPLE_USER_AGENT);
         evaluator.evaluate();
         verify(channel, only()).openIncident(argThat(x -> {
             assertEquals(500, x.getHttpStatus());
@@ -159,7 +164,7 @@ class EndpointEvaluatorTest {
         config.setName(SAMPLE_SERVICE_NAME);
         config.setAllowedStatusCodes(Arrays.asList(200));
         config.setAllowedActuatorStatus(Arrays.asList("UP"));
-        EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channel, SAMPLE_USER_AGENT);
+        EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channelList, SAMPLE_USER_AGENT);
         evaluator.evaluate();
         verify(channel, only()).openIncident(any());
     }
@@ -173,7 +178,7 @@ class EndpointEvaluatorTest {
         config.setName(SAMPLE_SERVICE_NAME);
         config.setAllowedStatusCodes(Arrays.asList(200));
         config.setAllowedActuatorStatus(Arrays.asList("UP"));
-        EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channel, SAMPLE_USER_AGENT);
+        EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channelList, SAMPLE_USER_AGENT);
         evaluator.evaluate();
         verify(channel, only()).openIncident(any());
     }
@@ -186,7 +191,7 @@ class EndpointEvaluatorTest {
         config.setUrl(SAMPLE_HEALTHY_SERVICE + SAMPLE_HEALTH_PATH);
         config.setName(SAMPLE_SERVICE_NAME);
         config.setAllowedActuatorStatus(Arrays.asList("UP"));
-        EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channel, SAMPLE_USER_AGENT);
+        EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channelList, SAMPLE_USER_AGENT);
         evaluator.evaluate();
         verify(channel, never()).openIncident(any());
     }
@@ -205,7 +210,7 @@ class EndpointEvaluatorTest {
         customNetworkConfig.setHttpProxyHost(networkConfig.getHttpProxyHost());
         customNetworkConfig.setHttpProxyPort(networkConfig.getHttpProxyPort());
         customNetworkConfig.setFollowRedirects(false);
-        EndpointEvaluator evaluator = new EndpointEvaluator(config, customNetworkConfig, channel, SAMPLE_USER_AGENT);
+        EndpointEvaluator evaluator = new EndpointEvaluator(config, customNetworkConfig, channelList, SAMPLE_USER_AGENT);
         evaluator.evaluate();
         verify(channel, only()).openIncident(any());
     }
@@ -224,7 +229,7 @@ class EndpointEvaluatorTest {
         customNetworkConfig.setHttpProxyHost(networkConfig.getHttpProxyHost());
         customNetworkConfig.setHttpProxyPort(networkConfig.getHttpProxyPort());
         customNetworkConfig.setFollowRedirects(true);
-        EndpointEvaluator evaluator = new EndpointEvaluator(config, customNetworkConfig, channel, SAMPLE_USER_AGENT);
+        EndpointEvaluator evaluator = new EndpointEvaluator(config, customNetworkConfig, channelList, SAMPLE_USER_AGENT);
         evaluator.evaluate();
         verify(channel, never()).openIncident(any());
     }
@@ -241,7 +246,7 @@ class EndpointEvaluatorTest {
         customNetworkConfig.setHttpProxyHost(networkConfig.getHttpProxyHost());
         customNetworkConfig.setHttpProxyPort(networkConfig.getHttpProxyPort());
         customNetworkConfig.setFollowRedirects(true);
-        EndpointEvaluator evaluator = new EndpointEvaluator(config, customNetworkConfig, channel, SAMPLE_USER_AGENT);
+        EndpointEvaluator evaluator = new EndpointEvaluator(config, customNetworkConfig, channelList, SAMPLE_USER_AGENT);
         evaluator.evaluate();
         hoverfly.verify(service(SAMPLE_HEALTHY_SERVICE).get(SAMPLE_HEALTH_PATH).anyBody()
                 .header("User-Agent", SAMPLE_USER_AGENT));

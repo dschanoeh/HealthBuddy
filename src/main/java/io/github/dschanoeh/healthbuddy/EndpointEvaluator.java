@@ -75,7 +75,7 @@ public class EndpointEvaluator {
             if(networkConfig.getTimeout() != null) {
                 builder.setConnectTimeout(networkConfig.getTimeout());
             }
-            if(!networkConfig.getFollowRedirects()) {
+            if(Boolean.FALSE.equals(networkConfig.getFollowRedirects())) {
                 httpClientBuilder.disableRedirectHandling();
             }
         }
@@ -141,7 +141,7 @@ public class EndpointEvaluator {
             // Optionally validate actuator status
             if(config.getAllowedActuatorStatus() != null) {
                 validBody = validateBody(body);
-                if(!validBody) {
+                if(Boolean.FALSE.equals(validBody)) {
                     logger.log(Level.WARN, "Body not matching criteria");
                 }
             }
@@ -150,7 +150,7 @@ public class EndpointEvaluator {
                 if(currentIncident == null || !currentIncident.isOpen()) {
                     currentIncident = new Incident(Incident.Type.UNEXPECTED_RESPONSE, channels);
                     if(body != null) {
-                        if(isJson) {
+                        if(Boolean.TRUE.equals(isJson)) {
                             currentIncident.setBody(prettyPrintJson(body));
                         } else {
                             currentIncident.setBody(body);

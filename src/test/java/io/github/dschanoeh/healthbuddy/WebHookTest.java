@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
-public class WebHookTest {
+class WebHookTest {
 
     private final NetworkConfig networkConfiguration = new NetworkConfig();
     WebHook hook;

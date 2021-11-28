@@ -22,7 +22,7 @@ public class PushoverNotificationChannel implements NotificationChannel {
 
         for(RecipientConfiguration recipientConfiguration : configuration.getRecipients()) {
             Boolean tokensValid = validateTokens(configuration.getApplicationToken(), recipientConfiguration.getToken());
-            if (!tokensValid) {
+            if (Boolean.FALSE.equals(tokensValid)) {
                 throw new PushoverInvalidTokensException();
             }
 

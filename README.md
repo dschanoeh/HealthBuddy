@@ -8,7 +8,9 @@ HealthBuddy is a service that periodically queries health endpoints of one
 or more services and generates alerts in case these queries fail.
 
 It supports:
-* Microsoft Teams channel webhooks
+* Notifications via:
+  * Microsoft Teams channel webhooks
+  * Pushover
 * Optional Basic Auth
 * Operation through an HTTP proxy
 * A configurable list of acceptable status codes
@@ -40,10 +42,16 @@ services:
       - UP
     userName: basicAuthUser
     password: basicAuthPass
-# The Teams webhook to be called for alerts
-teams:
-  hooks:
-    - url: http://127.0.0.1/hook
+notificationServices:
+  # Configuration for Teams webhooks
+  teams:
+    hooks:
+      - url: http://127.0.0.1/hook
+  # Pushover configuration
+  pushover:
+    applicationToken: <token>
+    recipients:
+      - token: <token>
 # Optional network configuration
 network:
   httpProxyHost: 127.0.0.1
@@ -73,10 +81,13 @@ basic authentication when calling the health endpoint.
 
 In addition to the config file, it is also possible to set parameters through the environment:
 ```shell
-export TEAMS_HOOKS_0_URL="http://127.0.0.1/hook"
+export NOTIFICATIONSERVICES_TEAMS_HOOKS_0_URL="http://127.0.0.1/hook"
 ```
 
-### Teams Hook Configuration
+### Notification Services Configuration
+It is possible to configure teams webhooks, pushover recipients, or both.
+
+#### Teams Hook Configuration
 One or more Teams hooks can be configured. At a minimum, a URL must be provided for each.
 Optionally, an environment pattern can be configured. This pattern restricts, incidents for which
 environment get sent to this hook.
@@ -90,6 +101,22 @@ teams:
       environmentPattern: "^production$"
     - url: http://127.0.0.1/testHook
       environmentPattern: "^test"
+```
+
+#### Pushover
+In order to use the Pushover integration, you need to first register your instance of
+HealthBuddy as a new application. More information on this can be found
+[here](https://pushover.net/api).
+
+Afterwards a number of recipients can be configured. These can be either users identified
+by a user token or whole groups identified by a group token.
+
+```yaml
+  pushover:
+     applicationToken: <token>
+     recipients:
+        - token: <token>
+          environmentPattern: "^production$"
 ```
 
 ### Proxy Configuration

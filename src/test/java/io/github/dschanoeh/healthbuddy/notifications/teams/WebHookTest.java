@@ -1,7 +1,7 @@
-package io.github.dschanoeh.healthbuddy;
+package io.github.dschanoeh.healthbuddy.notifications.teams;
 
-import io.github.dschanoeh.healthbuddy.notifications.teams.WebHook;
-import io.github.dschanoeh.healthbuddy.notifications.teams.WebHookConfiguration;
+import io.github.dschanoeh.healthbuddy.Incident;
+import io.github.dschanoeh.healthbuddy.NetworkConfig;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -25,14 +25,14 @@ class WebHookTest {
     void hookPatternMatchingPositiveTest() {
         Incident i = new Incident(Incident.Type.NOT_REACHABLE, null);
         i.setEnvironment("test");
-        assertTrue(hook.isResponsible(i));
+        assertTrue(hook.shouldBeNotifiedAbout(i));
     }
 
     @Test
     void hookPatternMatchingNegativeTest() {
         Incident i = new Incident(Incident.Type.NOT_REACHABLE, null);
         i.setEnvironment("foo");
-        assertFalse(hook.isResponsible(i));
+        assertFalse(hook.shouldBeNotifiedAbout(i));
     }
 
 }

@@ -25,15 +25,15 @@ public class ServiceMonitor{
     private static final long EVALUATION_SPREAD_MS = 100;
     private static final String USER_AGENT_PREFIX = "HealthBuddy ";
 
-    Config config;
+    HealthBuddyConfiguration healthBuddyConfiguration;
     @Autowired
     ThreadPoolTaskScheduler scheduler;
     @Autowired
     private BuildProperties buildProperties;
 
-    public ServiceMonitor(Config config) {
+    public ServiceMonitor(HealthBuddyConfiguration healthBuddyConfiguration) {
         logger.log(Level.INFO, "Service monitor  initialized");
-        this.config = config;
+        this.healthBuddyConfiguration = healthBuddyConfiguration;
     }
 
     @PostConstruct
@@ -42,22 +42,22 @@ public class ServiceMonitor{
 
         logger.log(Level.DEBUG, "Setting up evaluators");
         List<NotificationChannel> channels = new ArrayList<>();
-        if(config.getNotificationServices().getTeams() != null) {
-            NotificationChannel teamsNotificationChannel = new TeamsNotificationChannel(config.getNotificationServices().getTeams(), config.getNetwork());
+        if(healthBuddyConfiguration.getNotificationServices().getTeams() != null) {
+            NotificationChannel teamsNotificationChannel = new TeamsNotificationChannel(healthBuddyConfiguration.getNotificationServices().getTeams(), healthBuddyConfiguration.getNetwork());
             channels.add(teamsNotificationChannel);
         }
-        if(config.getNotificationServices().getPushover() != null) {
-            NotificationChannel pushoverNotificationChannel = new PushoverNotificationChannel(config.getNotificationServices().getPushover());
+        if(healthBuddyConfiguration.getNotificationServices().getPushover() != null) {
+            NotificationChannel pushoverNotificationChannel = new PushoverNotificationChannel(healthBuddyConfiguration.getNotificationServices().getPushover());
             channels.add(pushoverNotificationChannel);
         }
 
         LocalDateTime firstExecution = LocalDateTime.now();
         firstExecution = firstExecution.plusNanos(EVALUATION_SPREAD_MS*1000*1000);
-        for(ServiceConfig c : config.getServices()) {
+        for(ServiceConfig c : healthBuddyConfiguration.getServices()) {
             try {
                 logger.log(Level.DEBUG, "Scheduling endpoint evaluator for service '{}'", c.getName());
-                EndpointEvaluator evaluator = new EndpointEvaluator(c, config.getNetwork(), channels, userAgent);
-                scheduler.scheduleAtFixedRate(evaluator::evaluate, java.sql.Timestamp.valueOf(firstExecution), config.getUpdateInterval());
+                EndpointEvaluator evaluator = new EndpointEvaluator(c, healthBuddyConfiguration.getNetwork(), channels, userAgent);
+                scheduler.scheduleAtFixedRate(evaluator::evaluate, java.sql.Timestamp.valueOf(firstExecution), healthBuddyConfiguration.getUpdateInterval());
                 firstExecution = firstExecution.plusNanos(EVALUATION_SPREAD_MS*1000*1000);
             } catch (MalformedURLException ex) {
                 logger.log(Level.ERROR, "Could not set up evaluator - Malformed URL found", ex);

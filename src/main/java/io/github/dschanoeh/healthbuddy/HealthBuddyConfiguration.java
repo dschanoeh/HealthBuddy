@@ -1,13 +1,13 @@
 package io.github.dschanoeh.healthbuddy;
 
 import io.github.dschanoeh.healthbuddy.notifications.NotificationServiceConfiguration;
+import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.validation.annotation.Validated;
@@ -16,12 +16,13 @@ import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-@Configuration
+@org.springframework.context.annotation.Configuration
 @EnableConfigurationProperties
 @ConfigurationProperties
 @EnableScheduling
 @Validated
-public class Config {
+@Generated
+public class HealthBuddyConfiguration {
     @NestedConfigurationProperty
     @Getter
     @Setter

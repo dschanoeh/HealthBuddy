@@ -115,7 +115,7 @@ public class TeamsNotificationChannel implements NotificationChannel {
     private void triggerHooks(Incident i, TeamsMessage m) {
         Boolean sent = false;
         for (WebHook hook : this.hooks) {
-            if (Boolean.TRUE.equals(hook.isResponsible(i))) {
+            if (Boolean.TRUE.equals(hook.shouldBeNotifiedAbout(i))) {
                 hook.send(m);
                 sent = true;
             }

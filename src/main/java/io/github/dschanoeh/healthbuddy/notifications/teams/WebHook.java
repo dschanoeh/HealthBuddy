@@ -2,9 +2,9 @@ package io.github.dschanoeh.healthbuddy.notifications.teams;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.dschanoeh.healthbuddy.Incident;
 import io.github.dschanoeh.healthbuddy.NetworkConfig;
 import io.github.dschanoeh.healthbuddy.ProxyConfiguration;
+import io.github.dschanoeh.healthbuddy.notifications.AbstractNotificationReceiver;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -25,10 +25,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class WebHook {
+public class WebHook extends AbstractNotificationReceiver {
     private static final Logger logger = LogManager.getLogger(WebHook.class);
     private static final int WEBHOOK_CONNECT_TIMEOUT_MS = 5000;
 
@@ -36,7 +34,6 @@ public class WebHook {
     private final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
     private final RequestConfig requestConfig;
     private final CloseableHttpClient httpClient;
-    private final Pattern environmentPattern;
     ObjectMapper mapper = new ObjectMapper();
 
     public WebHook(WebHookConfiguration configuration, NetworkConfig networkConfiguration) {
@@ -55,15 +52,7 @@ public class WebHook {
         }
         requestConfig = builder.build();
         this.httpClient = HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).setDefaultCredentialsProvider(credentialsProvider).build();
-        this.environmentPattern = configuration.getCompiledEnvironmentPattern();
-    }
-
-    public Boolean isResponsible(Incident i) {
-        if (environmentPattern != null && i.getEnvironment() != null) {
-            Matcher matcher = environmentPattern.matcher(i.getEnvironment());
-            return matcher.matches();
-        }
-        return true;
+        this.setEnvironmentPattern(configuration.getCompiledEnvironmentPattern());
     }
 
     public void send(TeamsMessage message) {

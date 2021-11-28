@@ -13,7 +13,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class RecipientTest {
+class RecipientTest {
     private static final String PROD_PATTERN = "^prod$";
 
     @Mock
@@ -36,10 +36,12 @@ public class RecipientTest {
         recipientConfiguration.setEnvironmentPattern(PROD_PATTERN);
         Recipient r = new Recipient(recipientConfiguration);
 
-
         Incident i = new Incident(Incident.Type.UNEXPECTED_RESPONSE, List.of(channel));
         i.setEnvironment("prod");
         assertTrue(r.shouldBeNotifiedAbout(i));
+
+        Incident genericIncident = new Incident(Incident.Type.UNEXPECTED_RESPONSE, List.of(channel));
+        assertFalse(r.shouldBeNotifiedAbout(genericIncident));
     }
 
     @Test
@@ -48,12 +50,24 @@ public class RecipientTest {
         recipientConfiguration.setEnvironmentPattern(PROD_PATTERN);
         Recipient r = new Recipient(recipientConfiguration);
 
-
         Incident i = new Incident(Incident.Type.UNEXPECTED_RESPONSE, List.of(channel));
         i.setEnvironment("proda");
         assertFalse(r.shouldBeNotifiedAbout(i));
 
         i.setEnvironment("test");
         assertFalse(r.shouldBeNotifiedAbout(i));
+    }
+
+    @Test
+    void recipientWithoutEnvironmentTest() {
+        RecipientConfiguration recipientConfiguration = new RecipientConfiguration();
+        Recipient r = new Recipient(recipientConfiguration);
+
+        Incident i = new Incident(Incident.Type.UNEXPECTED_RESPONSE, List.of(channel));
+        i.setEnvironment("proda");
+        assertTrue(r.shouldBeNotifiedAbout(i));
+
+        i.setEnvironment("test");
+        assertTrue(r.shouldBeNotifiedAbout(i));
     }
 }

@@ -1,5 +1,8 @@
 package io.github.dschanoeh.healthbuddy.notifications.pushover;
 
+import lombok.Generated;
+
+@Generated
 public class PushoverInvalidTokensException extends Exception {
 
     @Override

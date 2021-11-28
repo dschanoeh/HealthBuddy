@@ -2,14 +2,17 @@ package io.github.dschanoeh.healthbuddy.notifications.teams;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
+import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Generated
 public class TeamsMessageSection {
     @AllArgsConstructor
+    @Generated
     public static class Fact {
         @Getter
         @Setter

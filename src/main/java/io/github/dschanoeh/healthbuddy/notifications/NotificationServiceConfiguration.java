@@ -2,6 +2,7 @@ package io.github.dschanoeh.healthbuddy.notifications;
 
 import io.github.dschanoeh.healthbuddy.notifications.pushover.PushoverConfiguration;
 import io.github.dschanoeh.healthbuddy.notifications.teams.TeamsConfiguration;
+import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -14,6 +15,7 @@ import org.springframework.validation.annotation.Validated;
 @EnableConfigurationProperties
 @ConfigurationProperties
 @Validated
+@Generated
 public class NotificationServiceConfiguration {
     @NestedConfigurationProperty
     @Getter

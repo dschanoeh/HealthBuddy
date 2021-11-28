@@ -2,6 +2,7 @@ package io.github.dschanoeh.healthbuddy.notifications.teams;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Generated
 public class TeamsMessage {
     public static final String COLOR_RED = "FF0000";
     public static final String COLOR_GREEN = "00FF00";

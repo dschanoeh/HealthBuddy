@@ -1,6 +1,7 @@
 package io.github.dschanoeh.healthbuddy.notifications.pushover;
 
 import de.svenkubiak.jpushover.enums.Priority;
+import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +13,7 @@ import java.util.regex.PatternSyntaxException;
 
 @Validated
 @Configuration
+@Generated
 public class RecipientConfiguration {
 
     @Getter

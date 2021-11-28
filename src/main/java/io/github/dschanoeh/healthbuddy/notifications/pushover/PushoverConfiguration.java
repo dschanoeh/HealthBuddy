@@ -1,5 +1,6 @@
 package io.github.dschanoeh.healthbuddy.notifications.pushover;
 
+import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.context.annotation.Configuration;
@@ -10,6 +11,7 @@ import java.util.List;
 
 @Validated
 @Configuration
+@Generated
 public class PushoverConfiguration  {
 
     @Getter

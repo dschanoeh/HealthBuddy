@@ -1,0 +1,10 @@
+version: "3"
+
+services:
+  server:
+    image: dschanoeh/healthbuddy:latest
+    container_name: healthbuddy
+    restart: always
+    volumes:
+      - ./application.yaml:/app/application.yaml
+    ports: []

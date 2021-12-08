@@ -3,6 +3,8 @@
 ![](https://github.com/dschanoeh/HealthBuddy/workflows/build/badge.svg)
 ![GitHub](https://img.shields.io/github/license/dschanoeh/HealthBuddy)
 [![codecov](https://codecov.io/gh/dschanoeh/HealthBuddy/branch/main/graph/badge.svg?token=AWFQL4U1A5)](https://codecov.io/gh/dschanoeh/HealthBuddy)
+[![Docker Pulls](https://img.shields.io/docker/pulls/dschanoeh/healthbuddy)](https://hub.docker.com/r/dschanoeh/healthbuddy)
+[![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/dschanoeh/healthbuddy)](https://hub.docker.com/r/dschanoeh/healthbuddy)
 
 HealthBuddy is a service that periodically queries health endpoints of one
 or more services and generates alerts in case these queries fail.
@@ -16,7 +18,22 @@ It supports:
 * A configurable list of acceptable status codes
 * Spring boot actuator body evaluation based on a list of acceptable status
 
-## Building
+## Installation
+
+You can either rely on prebuilt binaries available on GitHub, build from source or use the docker image.
+
+### Docker
+
+A `docker-compose.yml` is provided in this repository. It expects a
+properly configured application.yaml which will then be mounted into
+the container.
+
+To download and run the latest version, create an application.yaml and then run:
+```
+$ docker-compose up -d
+```
+
+### Building from Source
 
 An execution of
 ```

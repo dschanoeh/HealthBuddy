@@ -14,6 +14,12 @@ import java.util.List;
 public class PushoverNotificationChannel implements NotificationChannel {
     private static final Logger logger = LogManager.getLogger(PushoverNotificationChannel.class);
 
+    private static final String OPEN_INCIDENT_TITLE_PATTERN = "New Incident: [%s] %s";
+    private static final String OPEN_INCIDENT_NOT_REACHABLE_MESSAGE_PATTERN = "The service could not be reached";
+    private static final String OPEN_INCIDENT_UNEXPECTED_RESPONSE_MESSAGE_PATTERN = "Unexpected response (HTTP %d):\n%s";
+    private static final String CLOSED_INCIDENT_TITLE_PATTERN = "Incident Resolved: %s - %s";
+    private static final String CLOSED_INCIDENT_MESSAGE_PATTERN = "Received a valid response again";
+
     private final PushoverConfiguration configuration;
     private final List<Recipient> recipients = new ArrayList<>();
 
@@ -45,17 +51,23 @@ public class PushoverNotificationChannel implements NotificationChannel {
 
     @Override
     public void openIncident(Incident i) {
-        String title = String.format("New Incident: [%s] %s", i.getEnvironment(), i.getServiceName());
-        String message = String.format("Affected service: %s - %s", i.getEnvironment(), i.getServiceName());
+        String title = String.format(OPEN_INCIDENT_TITLE_PATTERN, i.getEnvironment(), i.getServiceName());
+        String message = "";
+        if (i.getType() == Incident.Type.NOT_REACHABLE) {
+            message = String.format(OPEN_INCIDENT_NOT_REACHABLE_MESSAGE_PATTERN);
+        } else if (i.getType() == Incident.Type.UNEXPECTED_RESPONSE) {
+            message = String.format(OPEN_INCIDENT_UNEXPECTED_RESPONSE_MESSAGE_PATTERN, i.getHttpStatus(), i.getBody());
+        }
+        final String finalMessage = message;
         recipients.stream()
                 .filter(u -> u.shouldBeNotifiedAbout(i))
-                .forEach(u -> u.sendMessage(configuration.getApplicationToken(), title, message));
+                .forEach(u -> u.sendMessage(configuration.getApplicationToken(), title, finalMessage));
     }
 
     @Override
     public void closeIncident(Incident i) {
-        String title = String.format("Incident Resolved: %s - %s", i.getEnvironment(), i.getServiceName());
-        String message = "";
+        String title = String.format(CLOSED_INCIDENT_TITLE_PATTERN, i.getEnvironment(), i.getServiceName());
+        String message = CLOSED_INCIDENT_MESSAGE_PATTERN;
         recipients.stream()
                 .filter(u -> u.shouldBeNotifiedAbout(i))
                 .forEach(u -> u.sendMessage(configuration.getApplicationToken(), title, message));

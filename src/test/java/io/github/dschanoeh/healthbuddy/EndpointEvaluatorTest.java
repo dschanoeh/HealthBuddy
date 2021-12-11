@@ -10,6 +10,7 @@ import io.specto.hoverfly.junit5.api.HoverflyCore;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
@@ -90,6 +91,24 @@ class EndpointEvaluatorTest {
         EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channelList, SAMPLE_USER_AGENT);
         evaluator.evaluate();
         verify(channel, only()).openIncident(any());
+    }
+
+    @Test
+    void incidentClosesAgainTest(Hoverfly hoverfly) throws MalformedURLException {
+        InOrder inOrder = inOrder(channel);
+
+        hoverfly.simulate(dsl(service(SAMPLE_HEALTHY_SERVICE).get(SAMPLE_HEALTH_PATH).willReturn(serverError())));
+        ServiceConfig config = new ServiceConfig();
+        config.setUrl(SAMPLE_HEALTHY_SERVICE +SAMPLE_HEALTH_PATH);
+        config.setName(SAMPLE_SERVICE_NAME);
+        config.setAllowedStatusCodes(Arrays.asList(200));
+        EndpointEvaluator evaluator = new EndpointEvaluator(config, networkConfig, channelList, SAMPLE_USER_AGENT);
+        evaluator.evaluate();
+        inOrder.verify(channel, calls(1)).openIncident(any());
+
+        hoverfly.simulate(dsl(service(SAMPLE_HEALTHY_SERVICE).get(SAMPLE_HEALTH_PATH).willReturn(success())));
+        evaluator.evaluate();
+        inOrder.verify(channel, calls(1)).closeIncident(any());
     }
 
     @Test

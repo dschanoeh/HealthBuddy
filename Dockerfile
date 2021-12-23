@@ -16,4 +16,5 @@ COPY --from=builder /app/snapshot-dependencies/ ./
 COPY --from=builder /app/application/ ./
 VOLUME /app/application.yaml
 
+HEALTHCHECK CMD curl --fail http://localhost:8080/actuator/health || exit 1
 ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]

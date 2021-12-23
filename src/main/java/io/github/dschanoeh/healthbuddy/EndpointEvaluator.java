@@ -3,6 +3,8 @@ package io.github.dschanoeh.healthbuddy;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.dschanoeh.healthbuddy.notifications.NotificationChannel;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.http.Header;
 import org.apache.http.HeaderElement;
 import org.apache.http.HttpEntity;
@@ -33,6 +35,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
+
 public class EndpointEvaluator {
     private static final Logger logger = LogManager.getLogger(EndpointEvaluator.class);
     private static final String SERVICE_TC_IDENTIFIER = "service";
@@ -47,6 +50,9 @@ public class EndpointEvaluator {
     private final HttpClientContext context = HttpClientContext.create();
     private CloseableHttpClient httpClient;
     private final String userAgent;
+    @Getter
+    @Setter
+    private ReferenceEndpointEvaluator referenceEndpointEvaluator;
 
     public EndpointEvaluator(ServiceConfig config, NetworkConfig networkConfig, List<NotificationChannel> channels, String userAgent) throws MalformedURLException {
         this.config = config;
@@ -146,7 +152,7 @@ public class EndpointEvaluator {
                 }
             }
 
-            if(!(validStatus && validBody)) {
+            if(!(validStatus && validBody) && checkReferenceEndpoint()) {
                 if(currentIncident == null || !currentIncident.isOpen()) {
                     currentIncident = new Incident(Incident.Type.UNEXPECTED_RESPONSE, channels);
                     if(body != null) {
@@ -199,6 +205,19 @@ public class EndpointEvaluator {
         } catch (JsonProcessingException ex) {
             logger.log(Level.WARN, "Was not able to parse actuator response", ex);
             return false;
+        }
+        return true;
+    }
+
+    private boolean checkReferenceEndpoint() {
+        if(referenceEndpointEvaluator != null) {
+            Boolean result = referenceEndpointEvaluator.isUp();
+            if(result) {
+                logger.log(Level.INFO, "Checked reference endpoint, which is up. Letting alert through.");
+            } else {
+                logger.log(Level.INFO, "Checked reference endpoint, which is also down. Suppressing alert.");
+            }
+            return result;
         }
         return true;
     }

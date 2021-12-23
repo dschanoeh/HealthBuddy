@@ -1,5 +1,7 @@
 package io.github.dschanoeh.healthbuddy;
 
+import io.github.dschanoeh.healthbuddy.configuration.HealthBuddyConfiguration;
+import io.github.dschanoeh.healthbuddy.configuration.ServiceConfig;
 import io.github.dschanoeh.healthbuddy.notifications.NotificationChannel;
 import io.github.dschanoeh.healthbuddy.notifications.pushover.PushoverInvalidTokensException;
 import io.github.dschanoeh.healthbuddy.notifications.pushover.PushoverNotificationChannel;

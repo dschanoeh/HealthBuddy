@@ -1,5 +1,6 @@
 package io.github.dschanoeh.healthbuddy;
 
+import io.github.dschanoeh.healthbuddy.configuration.ProxyConfiguration;
 import org.apache.http.HttpHost;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ClearEnvironmentVariable;

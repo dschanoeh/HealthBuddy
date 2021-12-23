@@ -1,4 +1,4 @@
-package io.github.dschanoeh.healthbuddy;
+package io.github.dschanoeh.healthbuddy.configuration;
 
 import lombok.Getter;
 import lombok.Setter;

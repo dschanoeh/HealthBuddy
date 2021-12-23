@@ -1,7 +1,7 @@
 package io.github.dschanoeh.healthbuddy.notifications.teams;
 
 import io.github.dschanoeh.healthbuddy.Incident;
-import io.github.dschanoeh.healthbuddy.NetworkConfig;
+import io.github.dschanoeh.healthbuddy.configuration.NetworkConfig;
 import io.github.dschanoeh.healthbuddy.notifications.NotificationChannel;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;

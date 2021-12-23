@@ -1,5 +1,7 @@
 package io.github.dschanoeh.healthbuddy;
 
+import io.github.dschanoeh.healthbuddy.configuration.NetworkConfig;
+import io.github.dschanoeh.healthbuddy.configuration.ServiceConfig;
 import io.github.dschanoeh.healthbuddy.notifications.NotificationChannel;
 import io.specto.hoverfly.junit.core.Hoverfly;
 import io.specto.hoverfly.junit.core.HoverflyMode;

@@ -2,6 +2,9 @@ package io.github.dschanoeh.healthbuddy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.dschanoeh.healthbuddy.configuration.NetworkConfig;
+import io.github.dschanoeh.healthbuddy.configuration.ProxyConfiguration;
+import io.github.dschanoeh.healthbuddy.configuration.ServiceConfig;
 import io.github.dschanoeh.healthbuddy.notifications.NotificationChannel;
 import lombok.Getter;
 import lombok.Setter;

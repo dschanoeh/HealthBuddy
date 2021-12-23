@@ -1,5 +1,7 @@
 package io.github.dschanoeh.healthbuddy;
 
+import io.github.dschanoeh.healthbuddy.configuration.NetworkConfig;
+import io.github.dschanoeh.healthbuddy.configuration.ProxyConfiguration;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;

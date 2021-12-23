@@ -2,8 +2,8 @@ package io.github.dschanoeh.healthbuddy.notifications.teams;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.dschanoeh.healthbuddy.NetworkConfig;
-import io.github.dschanoeh.healthbuddy.ProxyConfiguration;
+import io.github.dschanoeh.healthbuddy.configuration.NetworkConfig;
+import io.github.dschanoeh.healthbuddy.configuration.ProxyConfiguration;
 import io.github.dschanoeh.healthbuddy.notifications.AbstractNotificationReceiver;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;

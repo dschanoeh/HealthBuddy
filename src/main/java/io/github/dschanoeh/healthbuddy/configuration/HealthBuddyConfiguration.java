@@ -1,5 +1,6 @@
-package io.github.dschanoeh.healthbuddy;
+package io.github.dschanoeh.healthbuddy.configuration;
 
+import io.github.dschanoeh.healthbuddy.ReferenceEndpointEvaluator;
 import io.github.dschanoeh.healthbuddy.notifications.NotificationServiceConfiguration;
 import lombok.Generated;
 import lombok.Getter;

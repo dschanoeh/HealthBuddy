@@ -1,7 +1,7 @@
 package io.github.dschanoeh.healthbuddy.notifications.teams;
 
 import io.github.dschanoeh.healthbuddy.Incident;
-import io.github.dschanoeh.healthbuddy.NetworkConfig;
+import io.github.dschanoeh.healthbuddy.configuration.NetworkConfig;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;

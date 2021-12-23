@@ -77,6 +77,9 @@ network:
     - my-domain.com
   timeout: 5000
   followRedirects: false
+# Optional reference endpoint configuration
+referenceEndpoint:
+  url: https://www.google.com
 ```
 
 ### Service Configuration
@@ -100,6 +103,14 @@ In addition to the config file, it is also possible to set parameters through th
 ```shell
 export NOTIFICATIONSERVICES_TEAMS_HOOKS_0_URL="http://127.0.0.1/hook"
 ```
+
+### Reference Endpoint
+Optionally, a reference endpoint can be specified. This is useful if HealthBuddy itself
+is hosted in an environment that may become offline itself (e.g. a home network).
+
+When specified, the reference endpoint will be queried to decide if an alert is to be
+suppressed or not. If the reference endpoint also cannot be reached, the alert is
+suppressed because it is assumed that the issue is with HealthBuddy itself.
 
 ### Notification Services Configuration
 It is possible to configure teams webhooks, pushover recipients, or both.

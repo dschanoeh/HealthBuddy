@@ -79,7 +79,7 @@ network:
   followRedirects: false
 # Optional reference endpoint configuration
 referenceEndpoint:
-  url: https://www.google.com
+  url: https://httpstat.us/200
 ```
 
 ### Service Configuration

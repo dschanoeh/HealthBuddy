@@ -1,10 +1,17 @@
 package io.github.dschanoeh.healthbuddy.configuration;
 
 import io.github.dschanoeh.healthbuddy.ReferenceEndpointEvaluator;
+import io.github.dschanoeh.healthbuddy.notifications.NotificationChannel;
 import io.github.dschanoeh.healthbuddy.notifications.NotificationServiceConfiguration;
+import io.github.dschanoeh.healthbuddy.notifications.pushover.PushoverInvalidTokensException;
+import io.github.dschanoeh.healthbuddy.notifications.pushover.PushoverNotificationChannel;
+import io.github.dschanoeh.healthbuddy.notifications.teams.TeamsNotificationChannel;
 import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -26,7 +33,9 @@ import java.util.List;
 @Validated
 @Generated
 public class HealthBuddyConfiguration {
+    private static final Logger logger = LogManager.getLogger(HealthBuddyConfiguration.class);
     private static final String USER_AGENT_PREFIX = "HealthBuddy ";
+    private static final long EVALUATION_SPREAD_MS = 100;
 
     @NestedConfigurationProperty
     @Getter
@@ -62,19 +71,39 @@ public class HealthBuddyConfiguration {
     }
 
     @Bean
-    public NetworkConfig getNetworkConfiguration() {
+    public NetworkConfig networkConfiguration() {
         return network;
     }
 
     @Bean
-    public ReferenceEndpointEvaluator getReferenceEndpointEvaluator() {
+    public ReferenceEndpointEvaluator referenceEndpointEvaluator() {
         if(referenceEndpoint != null) {
-            return new ReferenceEndpointEvaluator(referenceEndpoint.getUrl(), getUserAgent());
+            return new ReferenceEndpointEvaluator(referenceEndpoint.getUrl());
         }
         return null;
     }
 
-    public String getUserAgent() {
+    @Bean
+    public List<NotificationChannel> notificationChannels() {
+        ArrayList<NotificationChannel> channels = new ArrayList<>();
+        if(this.getNotificationServices().getTeams() != null) {
+            NotificationChannel teamsNotificationChannel = new TeamsNotificationChannel(this.getNotificationServices().getTeams(), this.getNetwork());
+            channels.add(teamsNotificationChannel);
+        }
+        if(this.getNotificationServices().getPushover() != null) {
+            try {
+                NotificationChannel pushoverNotificationChannel = new PushoverNotificationChannel(this.getNotificationServices().getPushover());
+                channels.add(pushoverNotificationChannel);
+            } catch (PushoverInvalidTokensException ex) {
+                logger.log(Level.ERROR, "Could not set up pushover notification channel", ex);
+            }
+        }
+        return channels;
+    }
+
+
+    @Bean(name = "userAgent")
+    public String userAgent() {
        return USER_AGENT_PREFIX + buildProperties.getVersion();
     }
 

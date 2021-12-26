@@ -53,7 +53,7 @@ class EndpointEvaluatorReferenceTest {
 
         @Bean
         public ReferenceEndpointEvaluator getTestReferenceEndpointEvaluator() {
-            return new ReferenceEndpointEvaluator(SAMPLE_HEALTHY_SERVICE+SAMPLE_REFERENCE_PATH, SAMPLE_USER_AGENT);
+            return new ReferenceEndpointEvaluator(SAMPLE_HEALTHY_SERVICE+SAMPLE_REFERENCE_PATH);
         }
 
         @Bean
@@ -62,6 +62,11 @@ class EndpointEvaluatorReferenceTest {
             n.setHttpProxyHost("127.0.0.1");
             n.setHttpProxyPort(HOVERFLY_PORT);
             return n;
+        }
+
+        @Bean(name = "userAgent")
+        public String userAgent() {
+            return SAMPLE_USER_AGENT;
         }
     }
 

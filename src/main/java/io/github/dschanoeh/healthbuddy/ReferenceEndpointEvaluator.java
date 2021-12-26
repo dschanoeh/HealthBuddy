@@ -17,6 +17,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -25,15 +26,16 @@ import java.net.MalformedURLException;
 public class ReferenceEndpointEvaluator {
     private static final Logger logger = LogManager.getLogger(ReferenceEndpointEvaluator.class);
     private final String url;
-    private final String userAgent;
+    @Autowired
+    @Qualifier("userAgent")
+    private String userAgent;
     @Autowired(required = false)
     private NetworkConfig networkConfig;
     private final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
     private CloseableHttpClient httpClient;
 
-    public ReferenceEndpointEvaluator(String url, String userAgent) {
+    public ReferenceEndpointEvaluator(String url) {
         this.url = url;
-        this.userAgent = userAgent;
     }
 
     public boolean isUp() {

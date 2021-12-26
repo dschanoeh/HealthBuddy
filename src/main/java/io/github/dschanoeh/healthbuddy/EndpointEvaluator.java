@@ -155,8 +155,11 @@ public class EndpointEvaluator {
                 }
             }
 
-            if(!(validStatus && validBody) && checkReferenceEndpoint()) {
-                if(currentIncident == null || !currentIncident.isOpen()) {
+            /* If we consider the status or the body not valid, we need to think about opening an incident... */
+            if(!(validStatus && validBody)) {
+                /* ...but only if the reference endpoint isn't also down, or we already have an incident open */
+                if(checkReferenceEndpoint() && (currentIncident == null || !currentIncident.isOpen())) {
+                    logger.log(Level.INFO, "Creating new incident...");
                     currentIncident = new Incident(Incident.Type.UNEXPECTED_RESPONSE, channels);
                     if(body != null) {
                         if(Boolean.TRUE.equals(isJson)) {
@@ -171,6 +174,7 @@ public class EndpointEvaluator {
                     currentIncident.setEnvironment(config.getEnvironment());
                     currentIncident.open();
                 }
+            /* If we got a valid response, we can close the incident if there was any */
             } else {
                 if(currentIncident != null && currentIncident.isOpen()) {
                     currentIncident.close();

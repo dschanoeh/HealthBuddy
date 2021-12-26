@@ -2,6 +2,7 @@ package io.github.dschanoeh.healthbuddy.notifications.pushover;
 
 import de.svenkubiak.jpushover.JPushover;
 import de.svenkubiak.jpushover.exceptions.JPushoverException;
+import de.svenkubiak.jpushover.http.PushoverResponse;
 import io.github.dschanoeh.healthbuddy.notifications.AbstractNotificationReceiver;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -19,13 +20,16 @@ public class Recipient extends AbstractNotificationReceiver {
 
     public void sendMessage(String applicationToken, String title, String message) {
         try {
-            JPushover.messageAPI()
+            PushoverResponse pushoverResponse = JPushover.messageAPI()
                     .withToken(applicationToken)
                     .withUser(configuration.getToken())
                     .withTitle(title)
                     .withMessage(message)
                     .withPriority(configuration.getPriority())
                     .push();
+            if (!pushoverResponse.isSuccessful()) {
+                logger.log(Level.ERROR, "Was not able to send pushover message: {}", pushoverResponse.getResponse());
+            }
         } catch (JPushoverException ex) {
             logger.log(Level.ERROR, "Received exception when attempting to send pushover message", ex);
         }

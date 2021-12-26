@@ -16,7 +16,7 @@ public class PushoverNotificationChannel implements NotificationChannel {
 
     private static final String OPEN_INCIDENT_TITLE_PATTERN = "New Incident: [%s] %s";
     private static final String OPEN_INCIDENT_NOT_REACHABLE_MESSAGE_PATTERN = "The service could not be reached";
-    private static final String OPEN_INCIDENT_UNEXPECTED_RESPONSE_MESSAGE_PATTERN = "Unexpected response (HTTP %d):\n%s";
+    private static final String OPEN_INCIDENT_UNEXPECTED_RESPONSE_MESSAGE_PATTERN = "Unexpected response (HTTP %d)";
     private static final String CLOSED_INCIDENT_TITLE_PATTERN = "Incident Resolved: %s - %s";
     private static final String CLOSED_INCIDENT_MESSAGE_PATTERN = "Received a valid response again";
 
@@ -56,7 +56,7 @@ public class PushoverNotificationChannel implements NotificationChannel {
         if (i.getType() == Incident.Type.NOT_REACHABLE) {
             message = String.format(OPEN_INCIDENT_NOT_REACHABLE_MESSAGE_PATTERN);
         } else if (i.getType() == Incident.Type.UNEXPECTED_RESPONSE) {
-            message = String.format(OPEN_INCIDENT_UNEXPECTED_RESPONSE_MESSAGE_PATTERN, i.getHttpStatus(), i.getBody());
+            message = String.format(OPEN_INCIDENT_UNEXPECTED_RESPONSE_MESSAGE_PATTERN, i.getHttpStatus());
         }
         final String finalMessage = message;
         recipients.stream()

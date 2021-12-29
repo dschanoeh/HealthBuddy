@@ -22,9 +22,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 
 public class ReferenceEndpointEvaluator {
     private static final Logger logger = LogManager.getLogger(ReferenceEndpointEvaluator.class);
+    private static final Long MIN_DURATION_BETWEEN_CHECKS_IN_SECONDS = 10L;
     private final String url;
     @Autowired
     @Qualifier("userAgent")
@@ -33,24 +36,36 @@ public class ReferenceEndpointEvaluator {
     private NetworkConfig networkConfig;
     private final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
     private CloseableHttpClient httpClient;
+    private ZonedDateTime lastSuccessfulCheck;
 
     public ReferenceEndpointEvaluator(String url) {
         this.url = url;
     }
 
     public boolean isUp() {
-        try (CloseableHttpResponse response = httpClient.execute(new HttpGet(url))) {
-            int statusCode = response.getStatusLine().getStatusCode();
-            logger.log(Level.INFO, "Received status code {} from reference endpoint", statusCode);
-            if(statusCode == 200) {
-                return true;
+        // Need to synchronize to ensure all evaluators can use the lastSuccessfulCheck jointly
+        synchronized (this) {
+            // Rate limit to a first check or afterwards only every MIN_DURATION_BETWEEN_CHECKS_IN_SECONDS
+            if (lastSuccessfulCheck == null ||
+                    ChronoUnit.SECONDS.between(lastSuccessfulCheck, ZonedDateTime.now()) > MIN_DURATION_BETWEEN_CHECKS_IN_SECONDS) {
+                logger.log(Level.DEBUG, "Querying the reference endpoint");
+                try (CloseableHttpResponse response = httpClient.execute(new HttpGet(url))) {
+                    int statusCode = response.getStatusLine().getStatusCode();
+                    logger.log(Level.INFO, "Received status code {} from reference endpoint", statusCode);
+                    if (statusCode == 200) {
+                        lastSuccessfulCheck = ZonedDateTime.now();
+                        return true;
+                    }
+                } catch (ClientProtocolException e) {
+                    logger.log(Level.INFO, "Received client protocol exception when calling reference endpoint", e);
+                } catch (IOException e) {
+                    logger.log(Level.INFO, "Received IO exception when calling reference endpoint", e);
+                }
+                return false;
             }
-        } catch (ClientProtocolException e) {
-            logger.log(Level.INFO, "Received client protocol exception when calling reference endpoint", e);
-        } catch (IOException e) {
-            logger.log(Level.INFO, "Received IO exception when calling reference endpoint", e);
+            logger.log(Level.DEBUG, "Returning cached result for the reference endpoint");
+            return true;
         }
-        return false;
     }
 
     @PostConstruct

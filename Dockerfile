@@ -9,7 +9,12 @@ FROM openjdk:11-jre-slim
 LABEL org.opencontainers.image.source="https://github.com/dschanoeh/HealthBuddy"
 LABEL org.opencontainers.image.description="A service that periodically queries health endpoints and generates alerts"
 
-RUN apt-get update && apt-get install -y curl
+RUN apt-get update && \
+    apt-get install -y curl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+RUN groupadd -r buddy && useradd --no-log-init -r -g buddy buddy
+USER buddy
 
 WORKDIR /app
 COPY --from=builder /app/dependencies/ ./

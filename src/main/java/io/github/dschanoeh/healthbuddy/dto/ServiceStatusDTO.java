@@ -33,4 +33,8 @@ public class ServiceStatusDTO {
     @Getter
     @Setter
     private IncidentDTO currentIncident;
+
+    @Getter
+    @Setter
+    private IncidentHistoryDTO incidentHistory;
 }

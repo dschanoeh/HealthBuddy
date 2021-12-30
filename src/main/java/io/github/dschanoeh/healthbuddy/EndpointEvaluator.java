@@ -173,6 +173,7 @@ public class EndpointEvaluator {
                     currentIncident.setUrl(config.getUrl());
                     currentIncident.setHttpStatus(statusCode);
                     currentIncident.setServiceName(config.getName());
+                    currentIncident.setServiceId(config.getId());
                     currentIncident.setEnvironment(config.getEnvironment());
                     currentIncident.open();
                 }

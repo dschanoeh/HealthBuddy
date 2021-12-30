@@ -1,6 +1,7 @@
 package io.github.dschanoeh.healthbuddy.configuration;
 
 import io.github.dschanoeh.healthbuddy.ReferenceEndpointEvaluator;
+import io.github.dschanoeh.healthbuddy.notifications.IncidentHistoryCollector;
 import io.github.dschanoeh.healthbuddy.notifications.NotificationChannel;
 import io.github.dschanoeh.healthbuddy.notifications.NotificationServiceConfiguration;
 import io.github.dschanoeh.healthbuddy.notifications.pushover.PushoverInvalidTokensException;
@@ -62,6 +63,9 @@ public class HealthBuddyConfiguration {
     @Autowired
     private BuildProperties buildProperties;
 
+    @Autowired
+    private IncidentHistoryCollector incidentHistoryCollector;
+
     @Bean
     public ThreadPoolTaskScheduler threadPoolTaskScheduler(){
         ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
@@ -98,6 +102,7 @@ public class HealthBuddyConfiguration {
                 logger.log(Level.ERROR, "Could not set up pushover notification channel", ex);
             }
         }
+        channels.add(incidentHistoryCollector);
         return channels;
     }
 

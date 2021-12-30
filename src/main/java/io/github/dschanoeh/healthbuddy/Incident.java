@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.UUID;
 
 public class Incident {
     public enum Type {UNEXPECTED_RESPONSE, NOT_REACHABLE}
@@ -34,6 +35,9 @@ public class Incident {
     @Getter
     @Setter
     private String url;
+    @Getter
+    @Setter
+    private UUID serviceId;
 
     public Incident(Type type, List<NotificationChannel> channels) {
         this.type = type;

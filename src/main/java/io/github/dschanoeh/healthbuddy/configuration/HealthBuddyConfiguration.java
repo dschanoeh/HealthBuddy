@@ -59,6 +59,10 @@ public class HealthBuddyConfiguration {
     @Setter
     @NestedConfigurationProperty
     private ReferenceEndpointConfiguration referenceEndpoint;
+    @Getter
+    @Setter
+    @NestedConfigurationProperty
+    private DashboardConfiguration dashboard = new DashboardConfiguration();
 
     @Autowired
     private BuildProperties buildProperties;

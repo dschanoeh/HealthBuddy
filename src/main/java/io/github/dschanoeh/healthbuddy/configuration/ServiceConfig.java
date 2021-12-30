@@ -7,6 +7,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.UUID;
 
 @Validated
 public class ServiceConfig {
@@ -34,4 +35,6 @@ public class ServiceConfig {
     @Getter
     @Setter
     private String environment;
+    @Getter
+    private final UUID id = UUID.randomUUID();
 }

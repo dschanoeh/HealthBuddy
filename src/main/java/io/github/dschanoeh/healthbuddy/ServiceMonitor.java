@@ -2,6 +2,8 @@ package io.github.dschanoeh.healthbuddy;
 
 import io.github.dschanoeh.healthbuddy.configuration.HealthBuddyConfiguration;
 import io.github.dschanoeh.healthbuddy.configuration.ServiceConfig;
+import io.github.dschanoeh.healthbuddy.dto.IncidentDTO;
+import io.github.dschanoeh.healthbuddy.dto.ServiceStatusDTO;
 import io.github.dschanoeh.healthbuddy.notifications.NotificationChannel;
 import io.github.dschanoeh.healthbuddy.notifications.pushover.PushoverInvalidTokensException;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +18,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.net.MalformedURLException;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +38,8 @@ public class ServiceMonitor {
     @Qualifier("userAgent")
     private String userAgent;
 
+    private final Map<UUID, EndpointEvaluator> evaluators = new HashMap<>();
+
 
     @PostConstruct
     public void startMonitoring() throws PushoverInvalidTokensException {
@@ -51,6 +55,7 @@ public class ServiceMonitor {
             try {
                 logger.log(Level.DEBUG, "Scheduling endpoint evaluator for service '{}'", c.getName());
                 EndpointEvaluator evaluator = new EndpointEvaluator(c, healthBuddyConfiguration.getNetwork(), channels, userAgent);
+                evaluators.put(c.getId(),evaluator);
                 if(referenceEndpointEvaluator != null) {
                    evaluator.setReferenceEndpointEvaluator(referenceEndpointEvaluator);
                 }
@@ -60,5 +65,48 @@ public class ServiceMonitor {
                 logger.log(Level.ERROR, "Could not set up evaluator - Malformed URL found", ex);
             }
         }
+    }
+
+    public List<ServiceStatusDTO> getServiceStatus() {
+        List<ServiceStatusDTO> list = new ArrayList<>();
+        for(ServiceConfig service : healthBuddyConfiguration.getServices()) {
+            ServiceStatusDTO statusDTO = getServiceStatus(service.getId());
+            list.add(statusDTO);
+        }
+        return list;
+    }
+
+    public ServiceStatusDTO getServiceStatus(UUID id) {
+        List<ServiceConfig> services = healthBuddyConfiguration.getServices();
+        Optional<ServiceConfig> serviceOptional = services.stream().filter(s -> s.getId().equals(id)).findFirst();
+        if(serviceOptional.isPresent()) {
+            ServiceConfig service = serviceOptional.get();
+            ServiceStatusDTO statusDTO = ServiceStatusDTO.builder()
+                    .id(service.getId())
+                    .environment(service.getEnvironment())
+                    .name(service.getName())
+                    .url(service.getUrl())
+                    .build();
+            EndpointEvaluator evaluator = evaluators.get(service.getId());
+            if (evaluator != null) {
+                Boolean isUp = evaluator.isUp();
+                if(isUp) {
+                    statusDTO.setIsUp(Boolean.TRUE);
+                } else {
+                    statusDTO.setIsUp(Boolean.FALSE);
+                    Incident i = evaluator.getCurrentIncident();
+                    IncidentDTO incidentDTO = new IncidentDTO();
+                    incidentDTO.setType(i.getType());
+                    incidentDTO.setStartDate(i.getStartDate());
+                    incidentDTO.setEndDate(i.getEndDate());
+                    incidentDTO.setBody(i.getBody());
+                    incidentDTO.setStatusCode(i.getHttpStatus());
+                    statusDTO.setCurrentIncident(incidentDTO);
+                }
+            }
+            return statusDTO;
+        }
+        logger.log(Level.INFO, "Could not find service config for a service with id {}", id);
+        return null;
     }
 }

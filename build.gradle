@@ -70,3 +70,17 @@ jacocoTestReport {
 		html.required = true
 	}
 }
+
+// Frontend build tasks
+task npmBuild(type: Exec) {
+	workingDir './src/frontend/'
+	commandLine 'npm', 'run', 'build'
+}
+task copyFrontendToBuild(type: Copy) {
+	dependsOn 'npmBuild'
+	from "$projectDir/src/frontend/dist/"
+	into "$buildDir/resources/main/static"
+}
+processResources {
+	dependsOn 'copyFrontendToBuild'
+}

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.dschanoeh.healthbuddy.configuration.NetworkConfig;
 import io.github.dschanoeh.healthbuddy.configuration.ProxyConfiguration;
 import io.github.dschanoeh.healthbuddy.configuration.ServiceConfig;
+import io.github.dschanoeh.healthbuddy.dto.ActuatorHealthResponseDTO;
 import io.github.dschanoeh.healthbuddy.notifications.NotificationChannel;
 import lombok.Getter;
 import lombok.Setter;
@@ -45,6 +46,7 @@ public class EndpointEvaluator {
     private static final String ENVIRONMENT_TC_IDENTIFIER = "environment";
 
     private final ServiceConfig config;
+    @Getter
     private Incident currentIncident;
     private final List<NotificationChannel> channels;
     private final NetworkConfig networkConfig;
@@ -201,10 +203,17 @@ public class EndpointEvaluator {
         }
     }
 
+    public Boolean isUp() {
+        if(currentIncident == null) {
+            return true;
+        }
+        return !currentIncident.isOpen();
+    }
+
     private boolean validateBody(String body) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            ActuatorHealthResponse response = objectMapper.readValue(body, ActuatorHealthResponse.class);
+            ActuatorHealthResponseDTO response = objectMapper.readValue(body, ActuatorHealthResponseDTO.class);
             if(!config.getAllowedActuatorStatus().contains(response.getStatus())) {
                 logger.log(Level.WARN, "Received status {} is not an allowed status", response.getStatus());
                 return false;

@@ -3,6 +3,7 @@ plugins {
 	id 'com.diffplug.spotless' version '5.1.0'
 	id 'java'
 	id 'jacoco'
+	id "com.github.node-gradle.node" version "3.1.1"
 }
 apply plugin: 'io.spring.dependency-management'
 
@@ -71,10 +72,15 @@ jacocoTestReport {
 	}
 }
 
-// Frontend build tasks
-task npmBuild(type: Exec) {
-	workingDir './src/frontend/'
-	commandLine 'npm', 'run', 'build'
+// Frontend build configuration
+node {
+	version = '0.11.10'
+	npmVersion = '8.3.0'
+	nodeModulesDir = file("./src/frontend")
+}
+task npmBuild(type: NpmTask, dependsOn: npmInstall) {
+	group = 'node'
+	args = ['run', 'build']
 }
 task copyFrontendToBuild(type: Copy) {
 	dependsOn 'npmBuild'

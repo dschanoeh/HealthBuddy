@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -19,6 +20,7 @@ class RecipientTest {
     @Mock
     private NotificationChannel channel;
     private AutoCloseable closeable;
+    private final UUID serviceID = UUID.randomUUID();
 
     @BeforeEach
     public void openMocks() {
@@ -36,11 +38,11 @@ class RecipientTest {
         recipientConfiguration.setEnvironmentPattern(PROD_PATTERN);
         Recipient r = new Recipient(recipientConfiguration);
 
-        Incident i = new Incident(Incident.Type.UNEXPECTED_RESPONSE, List.of(channel));
+        Incident i = new Incident(Incident.Type.UNEXPECTED_RESPONSE, serviceID, List.of(channel));
         i.setEnvironment("prod");
         assertTrue(r.shouldBeNotifiedAbout(i));
 
-        Incident genericIncident = new Incident(Incident.Type.UNEXPECTED_RESPONSE, List.of(channel));
+        Incident genericIncident = new Incident(Incident.Type.UNEXPECTED_RESPONSE, serviceID, List.of(channel));
         assertFalse(r.shouldBeNotifiedAbout(genericIncident));
     }
 
@@ -50,7 +52,7 @@ class RecipientTest {
         recipientConfiguration.setEnvironmentPattern(PROD_PATTERN);
         Recipient r = new Recipient(recipientConfiguration);
 
-        Incident i = new Incident(Incident.Type.UNEXPECTED_RESPONSE, List.of(channel));
+        Incident i = new Incident(Incident.Type.UNEXPECTED_RESPONSE, serviceID, List.of(channel));
         i.setEnvironment("proda");
         assertFalse(r.shouldBeNotifiedAbout(i));
 
@@ -63,7 +65,7 @@ class RecipientTest {
         RecipientConfiguration recipientConfiguration = new RecipientConfiguration();
         Recipient r = new Recipient(recipientConfiguration);
 
-        Incident i = new Incident(Incident.Type.UNEXPECTED_RESPONSE, List.of(channel));
+        Incident i = new Incident(Incident.Type.UNEXPECTED_RESPONSE, serviceID, List.of(channel));
         i.setEnvironment("proda");
         assertTrue(r.shouldBeNotifiedAbout(i));
 

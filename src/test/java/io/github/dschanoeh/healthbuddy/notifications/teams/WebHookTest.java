@@ -4,6 +4,8 @@ import io.github.dschanoeh.healthbuddy.Incident;
 import io.github.dschanoeh.healthbuddy.configuration.NetworkConfig;
 import org.junit.jupiter.api.Test;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -11,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class WebHookTest {
 
     private final NetworkConfig networkConfiguration = new NetworkConfig();
+    private final UUID serviceId = UUID.randomUUID();
     WebHook hook;
 
     public WebHookTest() {
@@ -23,14 +26,14 @@ class WebHookTest {
 
     @Test
     void hookPatternMatchingPositiveTest() {
-        Incident i = new Incident(Incident.Type.NOT_REACHABLE, null);
+        Incident i = new Incident(Incident.Type.NOT_REACHABLE, serviceId, null);
         i.setEnvironment("test");
         assertTrue(hook.shouldBeNotifiedAbout(i));
     }
 
     @Test
     void hookPatternMatchingNegativeTest() {
-        Incident i = new Incident(Incident.Type.NOT_REACHABLE, null);
+        Incident i = new Incident(Incident.Type.NOT_REACHABLE, serviceId, null);
         i.setEnvironment("foo");
         assertFalse(hook.shouldBeNotifiedAbout(i));
     }

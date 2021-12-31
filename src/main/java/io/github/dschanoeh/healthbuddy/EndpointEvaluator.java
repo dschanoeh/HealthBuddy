@@ -2,6 +2,7 @@ package io.github.dschanoeh.healthbuddy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.dschanoeh.healthbuddy.configuration.DashboardConfiguration;
 import io.github.dschanoeh.healthbuddy.configuration.NetworkConfig;
 import io.github.dschanoeh.healthbuddy.configuration.ProxyConfiguration;
 import io.github.dschanoeh.healthbuddy.configuration.ServiceConfig;
@@ -50,6 +51,7 @@ public class EndpointEvaluator {
     private Incident currentIncident;
     private final List<NotificationChannel> channels;
     private final NetworkConfig networkConfig;
+    private final DashboardConfiguration dashboardConfig;
     private final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
     private final AuthCache cache = new BasicAuthCache();
     private final HttpClientContext context = HttpClientContext.create();
@@ -59,11 +61,12 @@ public class EndpointEvaluator {
     @Setter
     private ReferenceEndpointEvaluator referenceEndpointEvaluator;
 
-    public EndpointEvaluator(ServiceConfig config, NetworkConfig networkConfig, List<NotificationChannel> channels, String userAgent) throws MalformedURLException {
+    public EndpointEvaluator(ServiceConfig config, NetworkConfig networkConfig, DashboardConfiguration dashboardConfig, List<NotificationChannel> channels, String userAgent) throws MalformedURLException {
         this.config = config;
         this.channels = channels;
         this.networkConfig = networkConfig;
         this.userAgent = userAgent;
+        this.dashboardConfig = dashboardConfig;
         setupRequestConfig();
     }
 
@@ -162,7 +165,7 @@ public class EndpointEvaluator {
                 /* ...but only if the reference endpoint isn't also down, or we already have an incident open */
                 if(checkReferenceEndpoint() && (currentIncident == null || !currentIncident.isOpen())) {
                     logger.log(Level.INFO, "Creating new incident...");
-                    currentIncident = new Incident(Incident.Type.UNEXPECTED_RESPONSE, config.getId(), channels);
+                    currentIncident = initializeIncident(Incident.Type.UNEXPECTED_RESPONSE);
                     if(body != null) {
                         if(Boolean.TRUE.equals(isJson)) {
                             currentIncident.setBody(prettyPrintJson(body));
@@ -170,10 +173,7 @@ public class EndpointEvaluator {
                             currentIncident.setBody(body);
                         }
                     }
-                    currentIncident.setUrl(config.getUrl());
                     currentIncident.setHttpStatus(statusCode);
-                    currentIncident.setServiceName(config.getName());
-                    currentIncident.setEnvironment(config.getEnvironment());
                     currentIncident.open();
                 }
             /* If we got a valid response, we can close the incident if there was any */
@@ -185,22 +185,25 @@ public class EndpointEvaluator {
         } catch (ClientProtocolException e) {
             logger.log(Level.WARN, "Received a client protocol exception");
             if(currentIncident == null || !currentIncident.isOpen()) {
-                currentIncident = new Incident(Incident.Type.NOT_REACHABLE, config.getId(), channels);
-                currentIncident.setServiceName(config.getName());
-                currentIncident.setEnvironment(config.getEnvironment());
-                currentIncident.setUrl(config.getUrl());
+                currentIncident = initializeIncident(Incident.Type.NOT_REACHABLE);
                 currentIncident.open();
             }
         } catch (IOException e) {
             logger.log(Level.WARN, "Could not connect to endpoint");
             if(currentIncident == null || !currentIncident.isOpen()) {
-                currentIncident = new Incident(Incident.Type.NOT_REACHABLE, config.getId(), channels);
-                currentIncident.setServiceName(config.getName());
-                currentIncident.setEnvironment(config.getEnvironment());
-                currentIncident.setUrl(config.getUrl());
+                currentIncident = initializeIncident(Incident.Type.NOT_REACHABLE);
                 currentIncident.open();
             }
         }
+    }
+
+    private Incident initializeIncident(Incident.Type type) {
+        Incident i = new Incident(type, config.getId(), channels);
+        i.setServiceName(config.getName());
+        i.setEnvironment(config.getEnvironment());
+        i.setUrl(config.getUrl());
+        i.setBasePath(dashboardConfig.getBasePath());
+        return i;
     }
 
     public Boolean isUp() {

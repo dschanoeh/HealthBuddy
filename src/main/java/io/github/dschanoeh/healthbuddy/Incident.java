@@ -4,6 +4,7 @@ import io.github.dschanoeh.healthbuddy.notifications.NotificationChannel;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.net.URL;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -38,6 +39,8 @@ public class Incident {
     @Getter
     @Setter
     private UUID serviceId;
+    @Setter
+    private URL basePath;
 
     public Incident(Type type, UUID serviceId, List<NotificationChannel> channels) {
         this.type = type;
@@ -63,5 +66,12 @@ public class Incident {
 
     public Boolean isOpen() {
         return state == State.ACTIVE;
+    }
+
+    public String getServiceURL() {
+        if (basePath == null || serviceId == null) {
+            return null;
+        }
+        return basePath.toString() + '#' + serviceId;
     }
 }

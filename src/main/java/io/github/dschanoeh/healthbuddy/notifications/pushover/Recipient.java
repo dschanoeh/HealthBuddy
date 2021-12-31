@@ -1,6 +1,7 @@
 package io.github.dschanoeh.healthbuddy.notifications.pushover;
 
 import de.svenkubiak.jpushover.JPushover;
+import de.svenkubiak.jpushover.apis.Message;
 import de.svenkubiak.jpushover.exceptions.JPushoverException;
 import de.svenkubiak.jpushover.http.PushoverResponse;
 import io.github.dschanoeh.healthbuddy.notifications.AbstractNotificationReceiver;
@@ -18,15 +19,20 @@ public class Recipient extends AbstractNotificationReceiver {
         this.setEnvironmentPattern(configuration.getCompiledEnvironmentPattern());
     }
 
-    public void sendMessage(String applicationToken, String title, String message) {
+    public void sendMessage(String applicationToken, String title, String message, String url) {
         try {
-            PushoverResponse pushoverResponse = JPushover.messageAPI()
+            Message m = JPushover.messageAPI()
                     .withToken(applicationToken)
                     .withUser(configuration.getToken())
                     .withTitle(title)
                     .withMessage(message)
-                    .withPriority(configuration.getPriority())
-                    .push();
+                    .withPriority(configuration.getPriority());
+
+            if(url != null && !url.isEmpty()) {
+                m = m.withUrl(url);
+            }
+
+            PushoverResponse pushoverResponse = m.push();
             if (!pushoverResponse.isSuccessful()) {
                 logger.log(Level.ERROR, "Was not able to send pushover message: {}", pushoverResponse.getResponse());
             }

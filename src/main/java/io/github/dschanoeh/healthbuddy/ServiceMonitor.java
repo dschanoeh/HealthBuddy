@@ -29,7 +29,9 @@ public class ServiceMonitor {
 
     private final HealthBuddyConfiguration healthBuddyConfiguration;
     private final ThreadPoolTaskScheduler scheduler;
-    private final List<NotificationChannel> channels;
+    @Autowired
+    @Qualifier("allNotificationChannels")
+    private List<NotificationChannel> channels;
 
     @Autowired(required = false)
     private ReferenceEndpointEvaluator referenceEndpointEvaluator;
@@ -54,7 +56,7 @@ public class ServiceMonitor {
         for(ServiceConfig c : healthBuddyConfiguration.getServices()) {
             try {
                 logger.log(Level.DEBUG, "Scheduling endpoint evaluator for service '{}'", c.getName());
-                EndpointEvaluator evaluator = new EndpointEvaluator(c, healthBuddyConfiguration.getNetwork(), channels, userAgent);
+                EndpointEvaluator evaluator = new EndpointEvaluator(c, healthBuddyConfiguration.getNetwork(), healthBuddyConfiguration.getDashboard(), channels, userAgent);
                 evaluators.put(c.getId(),evaluator);
                 if(referenceEndpointEvaluator != null) {
                    evaluator.setReferenceEndpointEvaluator(referenceEndpointEvaluator);

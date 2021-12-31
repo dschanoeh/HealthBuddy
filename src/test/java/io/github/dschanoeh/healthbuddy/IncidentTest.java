@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
@@ -17,6 +18,7 @@ class IncidentTest {
     @Mock
     private NotificationChannel channel;
     private AutoCloseable closeable;
+    private final UUID serviceID = UUID.randomUUID();
 
     @BeforeEach
     public void openMocks() {
@@ -30,7 +32,7 @@ class IncidentTest {
 
     @Test
     void openIncidentTest() {
-        Incident i = new Incident(Incident.Type.UNEXPECTED_RESPONSE, List.of(channel));
+        Incident i = new Incident(Incident.Type.UNEXPECTED_RESPONSE, serviceID, List.of(channel));
 
         i.open();
         assertEquals(Incident.Type.UNEXPECTED_RESPONSE, i.getType());
@@ -42,7 +44,7 @@ class IncidentTest {
 
     @Test
     void closeIncidentTest() {
-        Incident i = new Incident(Incident.Type.UNEXPECTED_RESPONSE, List.of(channel));
+        Incident i = new Incident(Incident.Type.UNEXPECTED_RESPONSE, serviceID, List.of(channel));
         i.open();
 
         i.close();

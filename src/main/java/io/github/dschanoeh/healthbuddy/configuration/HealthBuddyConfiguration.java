@@ -91,7 +91,7 @@ public class HealthBuddyConfiguration {
         return null;
     }
 
-    @Bean
+    @Bean(name = "allNotificationChannels")
     public List<NotificationChannel> notificationChannels() {
         ArrayList<NotificationChannel> channels = new ArrayList<>();
         if(this.getNotificationServices().getTeams() != null) {

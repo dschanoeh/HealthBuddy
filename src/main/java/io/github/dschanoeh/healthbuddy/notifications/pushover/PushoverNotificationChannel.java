@@ -61,7 +61,7 @@ public class PushoverNotificationChannel implements NotificationChannel {
         final String finalMessage = message;
         recipients.stream()
                 .filter(u -> u.shouldBeNotifiedAbout(i))
-                .forEach(u -> u.sendMessage(configuration.getApplicationToken(), title, finalMessage));
+                .forEach(u -> u.sendMessage(configuration.getApplicationToken(), title, finalMessage, i.getServiceURL()));
     }
 
     @Override
@@ -70,6 +70,6 @@ public class PushoverNotificationChannel implements NotificationChannel {
         String message = CLOSED_INCIDENT_MESSAGE_PATTERN;
         recipients.stream()
                 .filter(u -> u.shouldBeNotifiedAbout(i))
-                .forEach(u -> u.sendMessage(configuration.getApplicationToken(), title, message));
+                .forEach(u -> u.sendMessage(configuration.getApplicationToken(), title, message, i.getServiceURL()));
     }
 }

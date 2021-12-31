@@ -1,5 +1,6 @@
 package io.github.dschanoeh.healthbuddy;
 
+import io.github.dschanoeh.healthbuddy.configuration.DashboardConfiguration;
 import io.github.dschanoeh.healthbuddy.configuration.NetworkConfig;
 import io.github.dschanoeh.healthbuddy.configuration.ServiceConfig;
 import io.github.dschanoeh.healthbuddy.notifications.NotificationChannel;
@@ -88,7 +89,8 @@ class EndpointEvaluatorReferenceTest {
         NetworkConfig customNetworkConfig = new NetworkConfig();
         customNetworkConfig.setHttpProxyHost(networkConfig.getHttpProxyHost());
         customNetworkConfig.setHttpProxyPort(networkConfig.getHttpProxyPort());
-        EndpointEvaluator evaluator = new EndpointEvaluator(config, customNetworkConfig, channelList, SAMPLE_USER_AGENT);
+        DashboardConfiguration customDashboardConfig = new DashboardConfiguration();
+        EndpointEvaluator evaluator = new EndpointEvaluator(config, customNetworkConfig, customDashboardConfig, channelList, SAMPLE_USER_AGENT);
         evaluator.setReferenceEndpointEvaluator(referenceEndpointEvaluator);
         evaluator.evaluate();
         verify(channel, never()).openIncident(any());
@@ -107,7 +109,8 @@ class EndpointEvaluatorReferenceTest {
         NetworkConfig customNetworkConfig = new NetworkConfig();
         customNetworkConfig.setHttpProxyHost(networkConfig.getHttpProxyHost());
         customNetworkConfig.setHttpProxyPort(networkConfig.getHttpProxyPort());
-        EndpointEvaluator evaluator = new EndpointEvaluator(config, customNetworkConfig, channelList, SAMPLE_USER_AGENT);
+        DashboardConfiguration customDashboardConfig = new DashboardConfiguration();
+        EndpointEvaluator evaluator = new EndpointEvaluator(config, customNetworkConfig, customDashboardConfig, channelList, SAMPLE_USER_AGENT);
         evaluator.setReferenceEndpointEvaluator(referenceEndpointEvaluator);
         evaluator.evaluate();
         verify(channel, only()).openIncident(any());

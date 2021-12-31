@@ -46,13 +46,14 @@
               </h3>
             </template>
             <b-container v-if="!service.isUp">
-              Incident type: {{ service.currentIncident.type }}<br />
-              Incident start: {{ service.currentIncident.startDate }}<br />
+              <h4>Current Incident:</h4>
+              Type: {{ service.currentIncident.type }}<br />
+              Start (UTC): {{ formatDate(service.currentIncident.startDate) }}<br />
               Resp. Status: {{ service.currentIncident.statusCode }}<br />
               Resp. Body: {{ service.currentIncident.body }}
             </b-container>
             <b-container v-if="service.incidentHistory">
-              History (last {{ service.incidentHistory.historyMaximum }} min):
+              <h4>History (last {{ service.incidentHistory.historyMaximum }} min):</h4>
               <b-progress
                 class="mt-2 border"
                 :max="service.incidentHistory.historyMaximum"
@@ -78,8 +79,8 @@
                 Type: {{ entry.incident.type }}<br />
                 Status code: {{ entry.incident.statusCode }}<br />
                 Body: {{ entry.incident.body }}<br />
-                Start date: {{ entry.incident.startDate }}<br />
-                End date: {{ entry.incident.endDate }}
+                Start (UTC): {{ formatDate(entry.incident.startDate) }}<br />
+                End (UTC): {{ entry.incident.endDate ? formatDate(entry.incident.endDate) : "" }}
               </b-tooltip>
             </b-container>
             <template #footer>
@@ -152,6 +153,10 @@ export default {
       }
       return "secondary";
     },
+    formatDate(value) {
+      var date = new Date(value)
+      return date.toLocaleString('de-DE', { timeZone: 'UTC' })
+    }
   },
 };
 </script>

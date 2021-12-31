@@ -13,7 +13,6 @@ import lombok.Setter;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
@@ -36,7 +35,6 @@ import java.util.List;
 public class HealthBuddyConfiguration {
     private static final Logger logger = LogManager.getLogger(HealthBuddyConfiguration.class);
     private static final String USER_AGENT_PREFIX = "HealthBuddy ";
-    private static final long EVALUATION_SPREAD_MS = 100;
 
     @NestedConfigurationProperty
     @Getter
@@ -64,12 +62,6 @@ public class HealthBuddyConfiguration {
     @NestedConfigurationProperty
     private DashboardConfiguration dashboard = new DashboardConfiguration();
 
-    @Autowired
-    private BuildProperties buildProperties;
-
-    @Autowired
-    private IncidentHistoryCollector incidentHistoryCollector;
-
     @Bean
     public ThreadPoolTaskScheduler threadPoolTaskScheduler(){
         ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
@@ -92,7 +84,7 @@ public class HealthBuddyConfiguration {
     }
 
     @Bean(name = "allNotificationChannels")
-    public List<NotificationChannel> notificationChannels() {
+    public List<NotificationChannel> notificationChannels(IncidentHistoryCollector incidentHistoryCollector) {
         ArrayList<NotificationChannel> channels = new ArrayList<>();
         if(this.getNotificationServices().getTeams() != null) {
             NotificationChannel teamsNotificationChannel = new TeamsNotificationChannel(this.getNotificationServices().getTeams(), this.getNetwork());
@@ -112,7 +104,7 @@ public class HealthBuddyConfiguration {
 
 
     @Bean(name = "userAgent")
-    public String userAgent() {
+    public String userAgent(BuildProperties buildProperties) {
        return USER_AGENT_PREFIX + buildProperties.getVersion();
     }
 

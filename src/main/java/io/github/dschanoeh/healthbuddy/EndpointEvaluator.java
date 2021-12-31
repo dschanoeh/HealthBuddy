@@ -231,7 +231,7 @@ public class EndpointEvaluator {
     private boolean checkReferenceEndpoint() {
         if(referenceEndpointEvaluator != null) {
             Boolean result = referenceEndpointEvaluator.isUp();
-            if(result) {
+            if(Boolean.TRUE.equals(result)) {
                 logger.log(Level.INFO, "Checked reference endpoint, which is up. Letting alert through.");
             } else {
                 logger.log(Level.INFO, "Checked reference endpoint, which is also down. Suppressing alert.");

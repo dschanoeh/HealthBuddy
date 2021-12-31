@@ -5,7 +5,6 @@ import io.github.dschanoeh.healthbuddy.configuration.ServiceConfig;
 import io.github.dschanoeh.healthbuddy.dto.IncidentDTO;
 import io.github.dschanoeh.healthbuddy.dto.ServiceStatusDTO;
 import io.github.dschanoeh.healthbuddy.notifications.NotificationChannel;
-import io.github.dschanoeh.healthbuddy.notifications.pushover.PushoverInvalidTokensException;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -44,7 +43,7 @@ public class ServiceMonitor {
 
 
     @PostConstruct
-    public void startMonitoring() throws PushoverInvalidTokensException {
+    public void startMonitoring() {
         logger.log(Level.DEBUG, "Setting up evaluators");
 
         if(referenceEndpointEvaluator != null) {
@@ -91,8 +90,7 @@ public class ServiceMonitor {
                     .build();
             EndpointEvaluator evaluator = evaluators.get(service.getId());
             if (evaluator != null) {
-                Boolean isUp = evaluator.isUp();
-                if(isUp) {
+                if(Boolean.TRUE.equals(evaluator.isUp())) {
                     statusDTO.setIsUp(Boolean.TRUE);
                 } else {
                     statusDTO.setIsUp(Boolean.FALSE);

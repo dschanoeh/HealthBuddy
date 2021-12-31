@@ -19,7 +19,7 @@ import java.util.*;
 
 @Component
 public class IncidentHistoryCollector implements NotificationChannel {
-    private static final Logger logger = LogManager.getLogger(NotificationChannel.class);
+    private static final Logger logger = LogManager.getLogger(IncidentHistoryCollector.class);
 
     private HealthBuddyConfiguration configuration;
 
@@ -119,7 +119,7 @@ public class IncidentHistoryCollector implements NotificationChannel {
             IncidentHistoryEntryDTO entry = new IncidentHistoryEntryDTO();
             entry.setStatus(IncidentHistoryEntryDTO.Status.DOWN);
             entry.setStart(minutesFromStartOfWindowTill(incident.getStartDate()));
-            if(incident.isOpen()) {
+            if(Boolean.TRUE.equals(incident.isOpen())) {
                 entry.setEnd(getHistoryWindowDuration());
             } else {
                 entry.setEnd(minutesFromStartOfWindowTill(incident.getEndDate()));
@@ -134,7 +134,7 @@ public class IncidentHistoryCollector implements NotificationChannel {
             history.add(entry);
 
             /* And finally, if the last incident is not open anymore, we also need to add an 'UP' entry in the end */
-            if(i == incidentList.size()-1 && !incidentList.get(i).isOpen()) {
+            if(i == incidentList.size()-1 && Boolean.FALSE.equals(incidentList.get(i).isOpen())) {
                 IncidentHistoryEntryDTO finalEntry = new IncidentHistoryEntryDTO();
                 finalEntry.setStatus(IncidentHistoryEntryDTO.Status.UP);
                 finalEntry.setStart(minutesFromStartOfWindowTill(incident.getEndDate()));

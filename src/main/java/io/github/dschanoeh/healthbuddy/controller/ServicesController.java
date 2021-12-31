@@ -53,7 +53,7 @@ public class ServicesController {
             }
             environment.getServices().add(service);
             environment.setServicesCount(environment.getServicesCount()+1);
-            if(service.getIsUp()) {
+            if(Boolean.TRUE.equals(service.getIsUp())) {
                 environment.setServicesUpCount(environment.getServicesUpCount()+1);
             }
         }
@@ -73,7 +73,7 @@ public class ServicesController {
     @GetMapping("/{id}")
     public ServiceStatusDTO getServiceStatusByID(@PathVariable("id") UUID id) {
         logger.log(Level.INFO, "Returning service status by ID for {}", id);
-        if(!configuration.getServices().stream().filter(s -> s.getId().equals(id)).findFirst().isPresent()) {
+        if(configuration.getServices().stream().noneMatch(s -> s.getId().equals(id))) {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "This service is not known"
             );
@@ -85,7 +85,7 @@ public class ServicesController {
     public IncidentHistoryDTO getServiceHistoryByID(@PathVariable("id") UUID id) {
         logger.log(Level.INFO, "Returning service history by ID for {}", id);
 
-        if(!configuration.getServices().stream().filter(s -> s.getId().equals(id)).findFirst().isPresent()) {
+        if(configuration.getServices().stream().noneMatch(s -> s.getId().equals(id))) {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "This service is not known"
             );

@@ -39,9 +39,10 @@ public class Incident {
     @Setter
     private UUID serviceId;
 
-    public Incident(Type type, List<NotificationChannel> channels) {
+    public Incident(Type type, UUID serviceId, List<NotificationChannel> channels) {
         this.type = type;
         this.channels = channels;
+        this.serviceId = serviceId;
     }
 
     public void open() {

@@ -162,7 +162,7 @@ public class EndpointEvaluator {
                 /* ...but only if the reference endpoint isn't also down, or we already have an incident open */
                 if(checkReferenceEndpoint() && (currentIncident == null || !currentIncident.isOpen())) {
                     logger.log(Level.INFO, "Creating new incident...");
-                    currentIncident = new Incident(Incident.Type.UNEXPECTED_RESPONSE, channels);
+                    currentIncident = new Incident(Incident.Type.UNEXPECTED_RESPONSE, config.getId(), channels);
                     if(body != null) {
                         if(Boolean.TRUE.equals(isJson)) {
                             currentIncident.setBody(prettyPrintJson(body));
@@ -173,7 +173,6 @@ public class EndpointEvaluator {
                     currentIncident.setUrl(config.getUrl());
                     currentIncident.setHttpStatus(statusCode);
                     currentIncident.setServiceName(config.getName());
-                    currentIncident.setServiceId(config.getId());
                     currentIncident.setEnvironment(config.getEnvironment());
                     currentIncident.open();
                 }
@@ -186,7 +185,7 @@ public class EndpointEvaluator {
         } catch (ClientProtocolException e) {
             logger.log(Level.WARN, "Received a client protocol exception");
             if(currentIncident == null || !currentIncident.isOpen()) {
-                currentIncident = new Incident(Incident.Type.NOT_REACHABLE, channels);
+                currentIncident = new Incident(Incident.Type.NOT_REACHABLE, config.getId(), channels);
                 currentIncident.setServiceName(config.getName());
                 currentIncident.setEnvironment(config.getEnvironment());
                 currentIncident.setUrl(config.getUrl());
@@ -195,7 +194,7 @@ public class EndpointEvaluator {
         } catch (IOException e) {
             logger.log(Level.WARN, "Could not connect to endpoint");
             if(currentIncident == null || !currentIncident.isOpen()) {
-                currentIncident = new Incident(Incident.Type.NOT_REACHABLE, channels);
+                currentIncident = new Incident(Incident.Type.NOT_REACHABLE, config.getId(), channels);
                 currentIncident.setServiceName(config.getName());
                 currentIncident.setEnvironment(config.getEnvironment());
                 currentIncident.setUrl(config.getUrl());

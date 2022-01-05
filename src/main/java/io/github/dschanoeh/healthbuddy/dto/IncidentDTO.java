@@ -1,15 +1,13 @@
 package io.github.dschanoeh.healthbuddy.dto;
 
 import io.github.dschanoeh.healthbuddy.Incident;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.ZonedDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
+@Generated
 public class IncidentDTO {
 
     @Getter

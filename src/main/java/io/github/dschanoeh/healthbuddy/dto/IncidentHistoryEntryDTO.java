@@ -1,11 +1,13 @@
 package io.github.dschanoeh.healthbuddy.dto;
 
 
+import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.UUID;
 
+@Generated
 public class IncidentHistoryEntryDTO {
 
     public enum Status {UNKNOWN, UP, DOWN}

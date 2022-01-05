@@ -84,7 +84,7 @@ public class IncidentHistoryCollector implements NotificationChannel {
         if(incidentList == null || incidentList.isEmpty()) {
             IncidentHistoryEntryDTO entry = new IncidentHistoryEntryDTO();
             entry.setStatus(IncidentHistoryEntryDTO.Status.UP);
-            entry.setStart(minutesFromStartOfWindowTill(serviceStartTime));
+            entry.setStart(serviceStartTimeFromStartOfWindow());
             entry.setEnd(getHistoryWindowDuration());
             history.add(entry);
 
@@ -106,7 +106,7 @@ public class IncidentHistoryCollector implements NotificationChannel {
                     && ChronoUnit.MINUTES.between(serviceStartTime, incident.getStartDate()) > 0) {
                 IncidentHistoryEntryDTO entry = new IncidentHistoryEntryDTO();
                 entry.setStatus(IncidentHistoryEntryDTO.Status.UP);
-                entry.setStart(minutesFromStartOfWindowTill(serviceStartTime));
+                entry.setStart(serviceStartTimeFromStartOfWindow());
                 entry.setEnd(minutesFromStartOfWindowTill(incident.getStartDate()));
                 history.add(entry);
             }
@@ -154,6 +154,16 @@ public class IncidentHistoryCollector implements NotificationChannel {
         return historyDTO;
     }
 
+    /** Returns the service start time in minutes from the beginning of the window or '0' in case the service
+     * started before the window.
+     */
+    private Long serviceStartTimeFromStartOfWindow() {
+        Long minutes = minutesFromStartOfWindowTill(serviceStartTime);
+        return minutes > 0 ? minutes : 0;
+    }
+
+    /** Converts a time stamp to minutes from the beginning of the window.
+     */
     private Long minutesFromStartOfWindowTill(ZonedDateTime time) {
         ZonedDateTime startOfWindow = ZonedDateTime.now().minus(getHistoryWindowDuration(), ChronoUnit.MINUTES);
         return ChronoUnit.MINUTES.between(startOfWindow, time);

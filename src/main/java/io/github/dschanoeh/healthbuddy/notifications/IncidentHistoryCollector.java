@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class IncidentHistoryCollector implements NotificationChannel {
@@ -24,7 +25,7 @@ public class IncidentHistoryCollector implements NotificationChannel {
     private HealthBuddyConfiguration configuration;
 
     private final ZonedDateTime serviceStartTime = ZonedDateTime.now();
-    private final Map<UUID, List<Incident>> incidentHistory = new HashMap<>();
+    private final Map<UUID, List<Incident>> incidentHistory = new ConcurrentHashMap<>();
 
     @Autowired @Lazy
     public void setConfiguration(HealthBuddyConfiguration configuration) {
@@ -40,7 +41,7 @@ public class IncidentHistoryCollector implements NotificationChannel {
             List<Incident> incidentList = incidentHistory.get(serviceId);
             incidentList.add(i);
         } else {
-            List<Incident> incidentList = new ArrayList<>();
+            List<Incident> incidentList = Collections.synchronizedList(new ArrayList<>());
             incidentList.add(i);
             incidentHistory.put(serviceId, incidentList);
         }
@@ -51,7 +52,13 @@ public class IncidentHistoryCollector implements NotificationChannel {
     }
 
     public List<Incident> getHistoryForService(UUID id) {
-        return incidentHistory.get(id);
+        List<Incident> history = incidentHistory.get(id);
+        if (history == null) {
+            return null;
+        }
+
+        history.removeIf(i -> !i.isOpen() && minutesFromStartOfWindowTill(i.getEndDate()) < 0);
+        return history;
     }
 
     private Long getHistoryWindowDuration() {

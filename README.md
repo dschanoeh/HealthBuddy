@@ -13,6 +13,7 @@ It supports:
 * Notifications via:
   * Microsoft Teams channel webhooks
   * Pushover
+* A dashboard to observe the current status and history
 * Optional Basic Auth
 * Operation through an HTTP proxy
 * A configurable list of acceptable status codes
@@ -69,6 +70,10 @@ notificationServices:
     applicationToken: <token>
     recipients:
       - token: <token>
+# Optional dashboard configuration
+dashboard:
+  historyWindowDuration: 15
+  basePath: http://192.168.0.7:8080/
 # Optional network configuration
 network:
   httpProxyHost: 127.0.0.1
@@ -146,6 +151,15 @@ by a user token or whole groups identified by a group token.
         - token: <token>
           environmentPattern: "^production$"
 ```
+### Dashboard
+HealthBuddy listens on port 8080 and provides a dashboard giving an overview of the status of
+all services grouped by environment.
+![](images/dashboard_screenshot.png)
+Additionally, an incident history is computed for each service. The duration of the history window
+can be configured via `historyWindowDuration` which is given in minutes.
+
+If a `basePath` is configured, notification services will use it to link to the dashboard for quick
+access to the incident details.
 
 ### Proxy Configuration
 A proxy can be provided through any of the following means which take precedence in the order

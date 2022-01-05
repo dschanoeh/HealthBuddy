@@ -15,6 +15,7 @@ import java.util.List;
 public class TeamsNotificationChannel implements NotificationChannel {
     private static final Logger logger = LogManager.getLogger(TeamsNotificationChannel.class);
     private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd - HH:mm:ss z");
+    private static final String SHOW_ON_DASHBOARD = "Show on Dashboard";
 
     TeamsConfiguration configuration;
     private final List<WebHook> hooks;
@@ -66,6 +67,10 @@ public class TeamsNotificationChannel implements NotificationChannel {
                 return;
         }
 
+        if(i.getServiceURL() != null) {
+            message.addAction(new TeamsMessageOpenUriAction(SHOW_ON_DASHBOARD, i.getServiceURL()));
+        }
+
         triggerHooks(i, message);
     }
 
@@ -89,6 +94,11 @@ public class TeamsNotificationChannel implements NotificationChannel {
             String durationString = String.format("%d:%02d:%02d", s / 3600, (s % 3600) / 60, (s % 60));
             facts.add(new TeamsMessageSection.Fact("Duration", durationString));
         }
+
+        if(i.getServiceURL() != null) {
+            message.addAction(new TeamsMessageOpenUriAction(SHOW_ON_DASHBOARD, i.getServiceURL()));
+        }
+
         triggerHooks(i, message);
     }
 

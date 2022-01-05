@@ -32,5 +32,12 @@ public class TeamsMessage {
 
     @JsonProperty("@type")
     private final String type = "MessageCard";
+
+    @JsonProperty("potentialAction")
+    private final List<TeamsMessageOpenUriAction> actions = new ArrayList<>();
+
+    public void addAction(TeamsMessageOpenUriAction action) {
+        this.actions.add(action);
+    }
 }
 

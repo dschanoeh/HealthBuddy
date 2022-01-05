@@ -72,6 +72,7 @@ public class Incident {
         if (basePath == null || serviceId == null) {
             return null;
         }
-        return basePath.toString() + '#' + serviceId;
+        /* TODO For now, only the base path is returned until we've found a way to link to a service */
+        return basePath.toString();
     }
 }

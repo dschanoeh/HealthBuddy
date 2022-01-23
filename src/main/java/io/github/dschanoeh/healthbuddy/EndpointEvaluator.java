@@ -184,13 +184,13 @@ public class EndpointEvaluator {
             }
         } catch (ClientProtocolException e) {
             logger.log(Level.WARN, "Received a client protocol exception");
-            if(currentIncident == null || !currentIncident.isOpen()) {
+            if(checkReferenceEndpoint() && (currentIncident == null || !currentIncident.isOpen())) {
                 currentIncident = initializeIncident(Incident.Type.NOT_REACHABLE);
                 currentIncident.open();
             }
         } catch (IOException e) {
             logger.log(Level.WARN, "Could not connect to endpoint");
-            if(currentIncident == null || !currentIncident.isOpen()) {
+            if(checkReferenceEndpoint() && (currentIncident == null || !currentIncident.isOpen())) {
                 currentIncident = initializeIncident(Incident.Type.NOT_REACHABLE);
                 currentIncident.open();
             }

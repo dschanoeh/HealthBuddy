@@ -24,7 +24,7 @@ public class IncidentHistoryCollector implements NotificationChannel {
 
     private HealthBuddyConfiguration configuration;
 
-    private final ZonedDateTime serviceStartTime = ZonedDateTime.now();
+    private final ZonedDateTime serviceStartTime = getCurrentTime();
     private final Map<UUID, List<Incident>> incidentHistory = new ConcurrentHashMap<>();
 
     @Autowired @Lazy
@@ -72,11 +72,11 @@ public class IncidentHistoryCollector implements NotificationChannel {
         historyDTO.setHistoryMaximum(getHistoryWindowDuration());
 
         // If the service was started within the history window, fill time with an "UNKNOWN" block
-        if(ChronoUnit.MINUTES.between(serviceStartTime, ZonedDateTime.now()) < getHistoryWindowDuration()) {
+        if(ChronoUnit.MINUTES.between(getServiceStartTime(), getCurrentTime()) < getHistoryWindowDuration()) {
             IncidentHistoryEntryDTO entry = new IncidentHistoryEntryDTO();
             entry.setStatus(IncidentHistoryEntryDTO.Status.UNKNOWN);
             entry.setStart(0L);
-            entry.setEnd(minutesFromStartOfWindowTill(serviceStartTime));
+            entry.setEnd(minutesFromStartOfWindowTill(getServiceStartTime()));
             history.add(entry);
         }
 
@@ -102,8 +102,8 @@ public class IncidentHistoryCollector implements NotificationChannel {
                 we need to add an 'UP' entry first.
              */
             if(i==0
-                    && incident.getStartDate().isAfter(serviceStartTime)
-                    && ChronoUnit.MINUTES.between(serviceStartTime, incident.getStartDate()) > 0) {
+                    && incident.getStartDate().isAfter(getServiceStartTime())
+                    && ChronoUnit.MINUTES.between(getServiceStartTime(), incident.getStartDate()) > 0) {
                 IncidentHistoryEntryDTO entry = new IncidentHistoryEntryDTO();
                 entry.setStatus(IncidentHistoryEntryDTO.Status.UP);
                 entry.setStart(serviceStartTimeFromStartOfWindow());
@@ -158,14 +158,22 @@ public class IncidentHistoryCollector implements NotificationChannel {
      * started before the window.
      */
     private Long serviceStartTimeFromStartOfWindow() {
-        Long minutes = minutesFromStartOfWindowTill(serviceStartTime);
+        Long minutes = minutesFromStartOfWindowTill(getServiceStartTime());
         return minutes > 0 ? minutes : 0;
     }
 
     /** Converts a time stamp to minutes from the beginning of the window.
      */
     private Long minutesFromStartOfWindowTill(ZonedDateTime time) {
-        ZonedDateTime startOfWindow = ZonedDateTime.now().minus(getHistoryWindowDuration(), ChronoUnit.MINUTES);
+        ZonedDateTime startOfWindow = getCurrentTime().minus(getHistoryWindowDuration(), ChronoUnit.MINUTES);
         return ChronoUnit.MINUTES.between(startOfWindow, time);
+    }
+
+    protected ZonedDateTime getCurrentTime() {
+        return ZonedDateTime.now();
+    }
+
+    protected ZonedDateTime getServiceStartTime() {
+        return serviceStartTime;
     }
 }

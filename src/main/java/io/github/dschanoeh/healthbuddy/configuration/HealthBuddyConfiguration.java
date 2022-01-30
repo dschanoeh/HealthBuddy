@@ -35,6 +35,7 @@ import java.util.List;
 public class HealthBuddyConfiguration {
     private static final Logger logger = LogManager.getLogger(HealthBuddyConfiguration.class);
     private static final String USER_AGENT_PREFIX = "HealthBuddy ";
+    private static final Integer THREAD_POOL_SIZE = 4;
 
     @NestedConfigurationProperty
     @Getter
@@ -62,10 +63,10 @@ public class HealthBuddyConfiguration {
     @NestedConfigurationProperty
     private DashboardConfiguration dashboard = new DashboardConfiguration();
 
-    @Bean
+    @Bean(name = "evaluatorThreadPool")
     public ThreadPoolTaskScheduler threadPoolTaskScheduler(){
         ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
-        threadPoolTaskScheduler.setPoolSize(services.size());
+        threadPoolTaskScheduler.setPoolSize(THREAD_POOL_SIZE);
         threadPoolTaskScheduler.setThreadNamePrefix("Evaluator");
         return threadPoolTaskScheduler;
     }

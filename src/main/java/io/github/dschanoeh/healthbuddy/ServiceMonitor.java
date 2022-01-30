@@ -27,6 +27,7 @@ public class ServiceMonitor {
     private static final long EVALUATION_SPREAD_MS = 100;
 
     private final HealthBuddyConfiguration healthBuddyConfiguration;
+    @Qualifier("evaluatorThreadPool")
     private final ThreadPoolTaskScheduler scheduler;
     @Autowired
     @Qualifier("allNotificationChannels")

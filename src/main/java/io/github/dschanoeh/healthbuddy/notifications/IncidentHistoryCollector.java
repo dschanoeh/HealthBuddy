@@ -176,4 +176,8 @@ public class IncidentHistoryCollector implements NotificationChannel {
     protected ZonedDateTime getServiceStartTime() {
         return serviceStartTime;
     }
+
+    protected void clearHistory() {
+        incidentHistory.clear();
+    }
 }

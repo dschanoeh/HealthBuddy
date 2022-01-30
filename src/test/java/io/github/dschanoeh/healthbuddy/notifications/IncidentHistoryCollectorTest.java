@@ -6,6 +6,7 @@ import io.github.dschanoeh.healthbuddy.configuration.HealthBuddyConfiguration;
 import io.github.dschanoeh.healthbuddy.dto.IncidentHistoryDTO;
 import io.github.dschanoeh.healthbuddy.dto.IncidentHistoryEntryDTO;
 import io.specto.hoverfly.junit5.HoverflyExtension;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -47,6 +48,11 @@ class IncidentHistoryCollectorTest {
         public IncidentHistoryCollector IncidentHistoryCollector() {
             return new IncidentHistoryCollector();
         }
+    }
+
+    @BeforeEach
+    void clearIncidentHistory() {
+        collector.clearHistory();
     }
 
     @Test
@@ -100,5 +106,63 @@ class IncidentHistoryCollectorTest {
         assertEquals(6, historyEntries.get(3).getStart());
         assertEquals(TEST_DASHBOARD_WINDOW_DURATION, historyEntries.get(3).getEnd());
         assertEquals(IncidentHistoryEntryDTO.Status.UP, historyEntries.get(3).getStatus());
+    }
+
+    @Test
+    void validHistoryForTwoIncidents() {
+        IncidentHistoryCollector collectorSpy = Mockito.spy(collector);
+        Mockito.doReturn(serviceStartTime).when(collectorSpy).getServiceStartTime();
+
+        // Incident is opened 1 minute after service start time
+        Mockito.doReturn(serviceStartTime.plusMinutes(1)).when(collectorSpy).getCurrentTime();
+        Incident i = Mockito.mock(Incident.class);
+        Mockito.doReturn(serviceStartTime.plusMinutes(1)).when(i).getStartDate();
+        Mockito.doReturn(Incident.Type.NOT_REACHABLE).when(i).getType();
+        Mockito.doReturn(SERVICE_ID).when(i).getServiceId();
+        Mockito.doReturn(true).when(i).isOpen();
+        collectorSpy.openIncident(i);
+
+        // Incident is closed 5 minutes after service start time
+        Mockito.doReturn(serviceStartTime.plusMinutes(5)).when(collectorSpy).getCurrentTime();
+        Mockito.doReturn(serviceStartTime.plusMinutes(5)).when(i).getEndDate();
+        Mockito.doReturn(false).when(i).isOpen();
+        collectorSpy.closeIncident(i);
+
+        // Second incident is opened 10 minutes after service start time and never closes
+        Mockito.doReturn(serviceStartTime.plusMinutes(10)).when(collectorSpy).getCurrentTime();
+        Incident i2 = Mockito.mock(Incident.class);
+        Mockito.doReturn(serviceStartTime.plusMinutes(10)).when(i2).getStartDate();
+        Mockito.doReturn(Incident.Type.NOT_REACHABLE).when(i2).getType();
+        Mockito.doReturn(SERVICE_ID).when(i2).getServiceId();
+        Mockito.doReturn(true).when(i2).isOpen();
+        collectorSpy.openIncident(i2);
+
+        Mockito.doReturn(serviceStartTime.plusMinutes(59)).when(collectorSpy).getCurrentTime();
+        IncidentHistoryDTO history = collectorSpy.getIncidentHistory(SERVICE_ID);
+
+        List<IncidentHistoryEntryDTO> historyEntries = history.getHistory();
+        assertEquals(5, historyEntries.size());
+
+        // There must be UP time between the two incidents
+        assertEquals(6, historyEntries.get(3).getStart());
+        assertEquals(11, historyEntries.get(3).getEnd());
+        assertEquals(IncidentHistoryEntryDTO.Status.UP, historyEntries.get(3).getStatus());
+
+        // The remainder is DOWN
+        assertEquals(11, historyEntries.get(4).getStart());
+        assertEquals(TEST_DASHBOARD_WINDOW_DURATION, historyEntries.get(4).getEnd());
+        assertEquals(IncidentHistoryEntryDTO.Status.DOWN, historyEntries.get(4).getStatus());
+    }
+
+    @Test
+    void validHistoryForServiceWithNoIncidents() {
+        IncidentHistoryCollector collectorSpy = Mockito.spy(collector);
+        Mockito.doReturn(serviceStartTime).when(collectorSpy).getServiceStartTime();
+        IncidentHistoryDTO incidentHistory = collectorSpy.getIncidentHistory(UNKNOWN_SERVICE_ID);
+        List<IncidentHistoryEntryDTO> history = incidentHistory.getHistory();
+        assertEquals(1, history.size());
+        assertEquals(IncidentHistoryEntryDTO.Status.UP, history.get(0).getStatus());
+        assertEquals(0, history.get(0).getStart());
+        assertEquals(60, history.get(0).getEnd());
     }
 }

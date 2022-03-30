@@ -18,7 +18,16 @@ jobs:
         with:
           java-version: '11'
           distribution: 'zulu'
-
+      - name: Get version from tag
+        run: |
+          VERSION=${{ github.event.release.tag_name }}
+          echo "VERSION=${VERSION:1}" >> $GITHUB_ENV
+      - name: Change property
+        uses: dschanoeh/change-property@v1
+        with:
+          file: gradle.properties
+          property: version
+          value: ${{ env.VERSION }}
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 

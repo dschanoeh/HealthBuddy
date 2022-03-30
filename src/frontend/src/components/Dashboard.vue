@@ -86,9 +86,9 @@
             <template #footer>
               <b-row>
                 <b-col class="text-left">
-                  <b-link :href="service.url"
-                    ><small class="text-light">{{ service.url }}</small></b-link
-                  >
+                  <b-link :href="service.url">
+                    <small class="text-light">{{ service.url }}</small>
+                  </b-link>
                 </b-col>
                 <b-col class="text-right">
                   <small class="text-light">{{ service.id }}</small>
@@ -115,7 +115,7 @@ export default {
     this.updateData();
     this.timer = setInterval(this.updateData, 10000);
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.cancelAutoUpdate();
   },
   methods: {

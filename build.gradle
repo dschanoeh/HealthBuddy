@@ -1,11 +1,11 @@
 plugins {
-	id 'org.springframework.boot' version '2.6.5'
-	id 'com.diffplug.spotless' version '6.4.0'
+	id 'org.springframework.boot' version '2.6.6'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'com.diffplug.spotless' version '6.4.1'
 	id 'java'
 	id 'jacoco'
 	id "com.github.node-gradle.node" version "3.2.1"
 }
-apply plugin: 'io.spring.dependency-management'
 
 group = 'io.github.dschanoeh'
 sourceCompatibility = '11'
@@ -20,7 +20,6 @@ configurations {
 		exclude group: 'ch.qos.logback', module: 'logback-classic'
 	}
 }
-ext['log4j2.version'] = '2.17.1'
 
 spotless {
 	java {
